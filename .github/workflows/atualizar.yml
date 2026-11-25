@@ -1,0 +1,57 @@
+name: Atualizar dados
+
+on:
+  schedule:
+    # dias 10 e 20 de cada mês, 07:00 em Brasília (10:00 UTC); a PBH publica o mês anterior no início do mês
+    - cron: "0 10 10,20 * *"
+  workflow_dispatch: {}
+  push:
+    branches: [main]
+    paths: ["pipeline/**", "site/**", "dados/calibracao.csv", "dados/manual/**", ".github/workflows/atualizar.yml"]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: atualizar
+  cancel-in-progress: false
+
+jobs:
+  construir:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      # guarda os arquivos já baixados entre uma execução e outra (só os meses novos são baixados)
+      - uses: actions/cache@v4
+        with:
+          path: dados/brutos
+          key: brutos-${{ github.run_id }}
+          restore-keys: brutos-
+
+      - name: Baixar, conferir e recalcular
+        run: bash pipeline/rodar.sh
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  publicar:
+    needs: construir
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4

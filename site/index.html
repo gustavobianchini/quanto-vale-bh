@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Busca ITBI BH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: ferramenta de trabalho, seca e precisa, como um cadastro técnico.
+   IDEA: a ficha de um prédio no cadastro municipal: endereço, histórico de transmissões.
+   PICTURE: a própria busca + gráfico de R$/m² ao longo do tempo do prédio.
+   COLOUR and TYPE: branco, preto, planos concreto #d8d8d4, amarelo #ffe600 só no destaque; Hanken Grotesk.
+   LAYOUT: busca no topo, ficha do prédio com números-chave, gráfico, tabela de transações. */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#1a1a19);--ink:light-dark(#111110,#ecebe6);--mut:light-dark(#5d5d58,#a3a29b);--pl:light-dark(#d8d8d4,#2c2c2a);--pl2:light-dark(#efefec,#232321);--ln:light-dark(#c4c4bf,#3d3d3a);--hi:#ffe600;--warn:light-dark(#9a3b00,#ffb37a)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Hanken Grotesk",system-ui,sans-serif;overflow-x:clip}
+.band{padding:clamp(24px,4vw,56px) max(5vw,16px)}
+.wrap{max-width:1240px;margin:0 auto}
+h1{font-size:clamp(28px,4vw,40px);line-height:1.05;font-weight:500;margin:0 0 6px;text-wrap:balance}
+h2{font-size:24px;line-height:1.15;font-weight:500;margin:0}
+.sub{color:var(--mut);margin:0 0 22px;max-width:70ch}
+.top{background:var(--pl)}
+.sbox{position:relative;display:flex;gap:10px;flex-wrap:wrap}
+.sbox input{flex:1 1 320px;font:inherit;font-size:18px;padding:12px 14px;border:2px solid var(--ink);background:var(--bg);color:var(--ink);border-radius:0;min-height:52px}
+.sbox input:focus{outline:3px solid var(--hi);outline-offset:0}
+button{font:inherit;min-height:44px;padding:8px 16px;border:2px solid var(--ink);background:var(--ink);color:var(--bg);cursor:pointer;border-radius:0}
+button.g{background:transparent;color:var(--ink)}
+button:focus-visible,a:focus-visible,select:focus-visible,label:focus-within{outline:3px solid var(--hi);outline-offset:2px}
+.sug{position:absolute;left:0;right:0;top:100%;z-index:5;background:var(--bg);border:2px solid var(--ink);border-top:0;list-style:none;margin:0;padding:0;max-height:360px;overflow:auto}
+.sug li{padding:10px 14px;cursor:pointer;display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--ln)}
+.sug li[aria-selected=true],.sug li:hover{background:var(--hi);color:#111}
+.sug small{color:inherit;opacity:.7;text-align:right}
+.hint{font-size:14px;color:var(--mut);margin-top:10px}
+.hint b{color:var(--ink);font-weight:500;cursor:pointer;text-decoration:underline;text-decoration-color:var(--ln)}
+.st{color:var(--mut);padding:18px 0}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+.head p{margin:4px 0 0;color:var(--mut)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:2px;background:var(--ink);border:2px solid var(--ink);margin-bottom:22px}
+.kpi{background:var(--bg);padding:14px 16px}
+.kpi span{display:block;font-size:13px;color:var(--mut)}
+.kpi b{display:block;font-size:clamp(22px,3vw,30px);font-weight:500;line-height:1.2;white-space:nowrap}
+.kpi.on b{background:var(--hi);color:#111;display:inline-block;padding:0 6px;margin-left:-6px}
+.kpi em{display:block;font-style:normal;font-size:13px;color:var(--mut)}
+.fig{position:relative;height:300px;border:2px solid var(--ink);background:var(--pl2);margin-bottom:8px}
+.fig>svg{position:absolute;inset:0;width:100%;height:100%}
+.leg{font-size:13px;color:var(--mut);margin:0 0 22px}
+.leg i{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:-1px;margin-right:4px}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.bar label{display:flex;gap:6px;align-items:center;min-height:44px;font-size:15px;cursor:pointer}
+.bar input[type=checkbox]{width:18px;height:18px;accent-color:#111}
+.bar input[type=text]{font:inherit;font-size:16px;padding:8px 10px;border:2px solid var(--ln);background:var(--bg);color:var(--ink);min-height:44px;width:180px}
+.bar .sp{flex:1}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{text-align:left;font-weight:500;font-size:13px;color:var(--mut);border-bottom:2px solid var(--ink);padding:8px 10px;white-space:nowrap;cursor:pointer;user-select:none}
+th[data-s]::after{content:" ↕";opacity:.35}th.asc::after{content:" ↑";opacity:1}th.desc::after{content:" ↓";opacity:1}
+td{padding:8px 10px;border-bottom:1px solid var(--ln);vertical-align:top}
+td.n,th.n{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+tr.click{cursor:pointer}tr.click:hover td{background:var(--pl2)}
+.flag{color:var(--warn);font-size:13px;white-space:nowrap}
+.tag{font-size:12px;border:1px solid var(--ln);padding:1px 6px;white-space:nowrap}
+.note{font-size:13px;color:var(--mut);max-width:80ch}
+.est{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);border:2px solid var(--ink);margin-bottom:22px}
+.est>div{padding:16px 18px}.est .em{background:var(--pl)}
+.est .em span{display:block;font-size:13px;color:var(--mut)}
+.est .em b{display:inline-block;font-size:clamp(28px,4vw,40px);font-weight:500;line-height:1.15;background:var(--hi);color:#111;padding:0 8px;margin:4px 0 6px -8px;white-space:nowrap}
+.est .em p{margin:0 0 6px;font-size:14px}
+.est .em .conf{display:inline-block;width:auto;color:var(--ink);font-size:12px;border:1px solid var(--ink);padding:1px 7px}
+.est h3{font-size:16px;font-weight:500;margin:0 0 4px}.est .pf{font-size:14px;color:var(--mut);margin:0 0 10px}
+.est table{font-size:14px}.est td,.est th{padding:6px 8px}
+.warn{font-size:13px;color:var(--warn);margin:6px 0 0}
+@media(max-width:760px){.est{grid-template-columns:minmax(0,1fr)}}
+:root{--c-ipca:light-dark(#c2410c,#fb923c);--c-cdi:light-dark(#1d4ed8,#7aa2ff);--c-usd:light-dark(#15803d,#4ade80)}
+.tabs{display:flex;gap:0;margin:0 0 18px;border:2px solid var(--ink);width:max-content;max-width:100%}
+.tabs button{background:transparent;color:var(--ink);border:0;min-height:44px}.tabs button.on{background:var(--ink);color:var(--bg)}
+.seg{display:flex;border:2px solid var(--ink)}.seg button{border:0;background:transparent;color:var(--ink);min-height:40px}.seg button.on{background:var(--hi);color:#111}
+select{font:inherit;font-size:16px;min-height:44px;padding:6px 10px;border:2px solid var(--ln);background:var(--bg);color:var(--ink);border-radius:0;margin-left:6px}
+.ovl{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:center;font-size:14px;margin:0 0 4px}.ovl span{color:var(--mut)}
+.ovl label{display:flex;gap:6px;align-items:center;min-height:40px;cursor:pointer}.ovl input{width:18px;height:18px;accent-color:#111}
+.sw{display:inline-block;width:18px;height:3px;background:var(--c)}
+.leg .ln{display:inline-block;width:16px;height:2px;background:var(--ink);opacity:.45;vertical-align:4px;margin-right:4px}
+.sumtx{display:block;margin-top:6px;color:var(--ink);font-size:14px}
+.rank td.w{width:22%;min-width:90px}.hb{display:block;height:10px;background:var(--ink);opacity:.8}
+.rank tr:first-child .hb{background:var(--hi);opacity:1;outline:1px solid var(--ink)}
+@media(max-width:600px){.rank td.w{display:none}.tabs{width:100%}.tabs button{flex:1}}
+.foot{background:var(--pl2);font-size:14px;color:var(--mut)}
+.foot p{max-width:80ch;margin:0 0 8px}
+@media(max-width:600px){table{font-size:13px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px;border-bottom:1px solid var(--ln)}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:8em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:7.5em;margin-inline-start:-8em;white-space:normal;color:var(--mut)}.stack td:empty{display:none}.fig{height:240px}}
+@media(prefers-reduced-motion:no-preference){.res{animation:in .25s ease-out}@keyframes in{from{opacity:0;transform:translateY(6px)}}}
+</style>
+<script>new MutationObserver(()=>{for(const c of document.querySelectorAll('.stack td:not([data-l])')){let i=0,p=c;while(p=p.previousElementSibling)i+=p.colSpan;c.dataset.l=c.closest('table').rows[0].cells[i]?.textContent||''}}).observe(document,{childList:true,subtree:true})</script>
+</head>
+<body>
+<section class="band top"><div class="wrap">
+  <h1>Negócios registrados no ITBI de Belo Horizonte</h1>
+  <nav class="tabs" aria-label="Seções"><button type="button" id="tA" class="on" aria-pressed="true">Buscar endereço</button><button type="button" id="tB" aria-pressed="false">Ranking de bairros</button></nav>
+  <p class="sub" id="sub">Todas as transmissões de imóveis quitadas na Prefeitura desde 2008, por endereço. Digite a rua e o número: “Rua Chile 197”.</p>
+  <form class="sbox" id="f" autocomplete="off">
+    <input id="q" type="search" placeholder="Rua, avenida… e número" aria-label="Endereço" aria-autocomplete="list" aria-controls="sug">
+    <button type="submit">Buscar</button>
+    <ul class="sug" id="sug" role="listbox" hidden></ul>
+  </form>
+  <div class="hint" id="hint">Carregando índice de ruas…</div>
+</div></section>
+
+<section class="band"><div class="wrap" id="out"><p class="st">Os resultados aparecem aqui.</p></div></section>
+
+<section class="band foot"><div class="wrap">
+  <p><b>Fonte:</b> PBH, Portal de Dados Abertos, “ITBI – Relatórios” (__PERIODO_ITBI__). Valor declarado = valor informado pelo contribuinte; base de cálculo = valor que a Prefeitura considerou para o imposto. Área útil ≈ área registrada na PBH × fator do prédio: a área da PBH é a área total do prédio × fração ideal, ou seja, inclui hall, lazer e garagem. O fator é conferido em alguns prédios (anúncios ou informação direta) e, nos demais, provisório (0,60, mediana dos prédios conferidos). Casas e lotes usam a área registrada. IPCA, CDI e dólar (PTAX): Banco Central / IBGE, mensais até __ECON_FIM__.</p>
+  <p>2014 tem bem menos registros que os demais anos na própria base da PBH. Transações entre parentes, frações e permutas não estão filtradas.</p>
+</div></section>
+
+<script>
+{
+const $=s=>document.querySelector(s);
+const q=$('#q'),sug=$('#sug'),out=$('#out'),hint=$('#hint');
+const brl=v=>v==null?'—':v.toLocaleString('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0});
+const n0=v=>v==null?'—':v.toLocaleString('pt-BR',{maximumFractionDigits:2});
+const dt=s=>s?s.slice(8,10)+'/'+s.slice(5,7)+'/'+s.slice(0,4):'';
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const norm=s=>s.normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase().replace(/[.,]/g,' ').replace(/\s+/g,' ').trim();
+const PFX={RUA:'RUA',R:'RUA',AVENIDA:'AVE',AV:'AVE',AVE:'AVE',ALAMEDA:'ALA',AL:'ALA',ALA:'ALA',PRACA:'PCA',PCA:'PCA',TRAVESSA:'TRV',TRV:'TRV',RODOVIA:'ROD',ROD:'ROD',BECO:'BEC',ESTRADA:'EST',VIA:'VIA'};
+const TIPO={AP:'Apartamento',CA:'Casa',BA:'Barracão',LV:'Lote vago',VR:'Vaga garagem',SL:'Sala',LJ:'Loja',VC:'Vaga comercial',AC:'Apto comercial',CC:'Casa comercial',BC:'Barracão comercial',GP:'Galpão',VV:'Vaga mista'};
+const med=a=>{if(!a.length)return null;const s=[...a].sort((x,y)=>x-y),m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2};
+const FU0=0.6;
+const ECON=__ECON__;
+let OVL={ipca:false,cdi:false,usd:false};try{Object.assign(OVL,JSON.parse(localStorage.getItem('itbi_ovl')||'{}'))}catch{}
+let IDX=[],cache=new Map(),pcache=new Map(),cur=null,sel=-1,sortK='d',sortDir=-1,resOnly=true,unitF='';
+
+function parseQ(t){let w=norm(t).split(' ').filter(Boolean),num='';
+  if(w.length>1&&/^\d+[A-Z]?$/.test(w[w.length-1])){num=w.pop()}
+  let pf='';if(w.length>1&&PFX[w[0]]){pf=PFX[w[0]];w.shift()}
+  return{pf,w,num}}
+function match(t){const{pf,w,num}=parseQ(t);if(!w.length)return{list:[],num};
+  const r=[];for(const e of IDX){const L=e[0];if(pf&&!L.startsWith(pf+' '))continue;
+    const body=L.slice(L.indexOf(' ')+1);let ok=true;for(const x of w)if(!(' '+body).includes(' '+x)){ok=false;break}
+    if(ok)r.push([body.startsWith(w.join(' '))?0:1,-e[2],e])}
+  r.sort((a,b)=>a[0]-b[0]||a[1]-b[1]);return{list:r.slice(0,10).map(x=>x[2]),num}}
+
+function showSug(){const{list}=match(q.value);sel=-1;
+  if(!q.value.trim()||!list.length){sug.hidden=true;return}
+  sug.innerHTML=list.map((e,i)=>`<li role="option" data-i="${i}"><span>${esc(e[0])}</span><small>${esc(e[3].slice(0,2).join(', '))} · ${e[2].toLocaleString('pt-BR')}</small></li>`).join('');
+  sug._l=list;sug.hidden=false}
+function pick(e){const{num}=parseQ(q.value);q.value=e[0]+(num?' '+num:'');sug.hidden=true;go(e,num)}
+
+q.addEventListener('input',showSug);
+q.addEventListener('keydown',ev=>{if(sug.hidden)return;const L=sug.querySelectorAll('li');
+  if(ev.key==='ArrowDown'||ev.key==='ArrowUp'){ev.preventDefault();sel=(sel+(ev.key==='ArrowDown'?1:-1)+L.length)%L.length;L.forEach((li,i)=>li.setAttribute('aria-selected',i===sel))}
+  else if(ev.key==='Enter'&&sel>=0){ev.preventDefault();pick(sug._l[sel])}
+  else if(ev.key==='Escape')sug.hidden=true});
+sug.addEventListener('mousedown',ev=>{const li=ev.target.closest('li');if(li){ev.preventDefault();pick(sug._l[+li.dataset.i])}});
+document.addEventListener('click',ev=>{if(!ev.target.closest('.sbox'))sug.hidden=true});
+$('#f').addEventListener('submit',ev=>{ev.preventDefault();const{list,num}=match(q.value);
+  if(!list.length){out.innerHTML=`<p class="st">Nenhuma rua encontrada para “${esc(q.value)}”. Tente só o nome principal, sem o tipo (ex.: “chile”).</p>`;return}
+  const exact=list.find(e=>e[0]===norm(q.value).replace(/\s\d+[A-Z]?$/,''));pick(exact||list[0])});
+hint.addEventListener('click',ev=>{const b=ev.target.closest('b');if(b){q.value=b.textContent;$('#f').requestSubmit()}});
+
+async function pshard(s){if(!pcache.has(s)){let mp=new Map();try{const r=await fetch(`data/p${s}.json`);if(r.ok)for(const[lg,n,v]of await r.json())mp.set(lg+'|'+n,v)}catch{}pcache.set(s,mp)}return pcache.get(s)}
+async function shard(s){if(!cache.has(s)){const r=await fetch(`data/s${s}.json`);if(!r.ok)throw new Error(r.status);cache.set(s,new Map(await r.json()))}return cache.get(s)}
+const rec=r=>{const[d,num,comp,bai,tp,oc,ac,at,vd,vb,pad,ano,fr,zona]=r;const area=tp==='LV'?at:ac;
+  return{d,num,comp,bai,tp,oc,ac,at,vd,vb,pad,ano:ano&&ano!=='0'?ano:'',fr,zona,m2:vd&&area>0?vd/area:null,div:vd&&vb?vb/vd-1:null}};
+
+function merge(rows){const g=new Map();for(const r of rows){const k=r.num+'|'+r.d;if(!g.has(k))g.set(k,[]);g.get(k).push(r)}
+  const out=[];for(const rs of g.values()){const aps=rs.filter(r=>r.tp==='AP'),vrs=rs.filter(r=>r.tp==='VR');
+    if(aps.length===1&&vrs.length){const a=aps[0],sum=f=>rs.filter(r=>r===a||r.tp==='VR').reduce((t,r)=>t+(r[f]||0),0);
+      const vd=sum('vd'),vb=sum('vb');out.push({...a,vd,vb,vagas:vrs.map(v=>v.comp||'vaga'),m2:vd&&a.ac>0?vd/a.ac:null,div:vd&&vb?vb/vd-1:null});
+      for(const r of rs)if(r!==a&&r.tp!=='VR')out.push(r)}
+    else out.push(...rs)}
+  return out}
+async function go(e,num){out.innerHTML='<p class="st">Carregando…</p>';
+  try{const[m,pm]=await Promise.all([shard(e[1]),pshard(e[1])]);const rows=merge((m.get(e[0])||[]).map(rec));
+    cur={lg:e[0],rows,pm};unitF='';
+    if(num&&(rows.some(r=>r.num===num)||pm.has(e[0]+'|'+num)))building(num);else street(num)}
+  catch(err){out.innerHTML=`<p class="st">Não consegui carregar os dados (${esc(err.message)}). Recarregue a página.</p>`}}
+
+function street(miss){const{lg,rows}=cur;const g=new Map();
+  for(const r of rows){if(resOnly&&r.oc!=='R')continue;const k=r.num||'s/n';if(!g.has(k))g.set(k,[]);g.get(k).push(r)}
+  const last=rows.reduce((a,r)=>r.d>a?r.d:a,'');const cut=String(+last.slice(0,4)-2)+last.slice(4);
+  const L=[...g].map(([k,rs])=>{const rec2=rs.filter(r=>r.d>=cut&&r.m2&&r.tp==='AP'&&!(r.div>=.2));return{k,n:rs.length,last:rs.reduce((a,r)=>r.d>a?r.d:a,''),bai:rs[0].bai,ano:rs.find(r=>r.ano)?.ano||'',m2:med(rec2.map(r=>r.m2)),nr:rec2.length}})
+  ;const pre=lg+'|';for(const[key,P]of cur.pm)if(key.startsWith(pre)){const k=key.slice(pre.length)||'s/n';const x=L.find(y=>y.k===k);if(x)x.P=P;else if(P.ap)L.push({k,n:0,last:'',bai:P.bai||'',ano:P.ano||'',m2:null,nr:0,P})}
+  L.sort((a,b)=>(parseInt(a.k)||1e9)-(parseInt(b.k)||1e9));const hasP=L.some(x=>x.P);
+  out.innerHTML=`<div class="res"><div class="head"><div><h2>${esc(lg)}</h2><p>${L.length} números com negócios${resOnly?' residenciais':''} · ${rows.length.toLocaleString('pt-BR')} registros no total${miss?` · o número ${esc(miss)} não aparece na base`:''}</p></div>
+  <div class="bar"><label><input type="checkbox" id="ro" ${resOnly?'checked':''}> Só residencial</label></div></div>
+  <div class="scroll"><table class="stack"><thead><tr><th>Número</th><th>Bairro</th><th class="n">Ano constr.</th><th class="n">Negócios</th><th class="n">Último</th><th class="n">R$/m² útil ≈ (24 meses)</th>${hasP?'<th class="n">R$/m² útil estimado hoje</th>':''}</tr></thead><tbody>
+  ${L.map(x=>`<tr class="click" data-k="${esc(x.k)}"><td><b>${esc(x.k)}</b></td><td>${esc(x.bai)}</td><td class="n">${esc(x.ano)}</td><td class="n">${x.n}</td><td class="n">${dt(x.last)}</td><td class="n">${x.m2?brl(x.m2/(cur.pm.get(lg+'|'+x.k)?.fu||FU0))+` <span class="note">(${x.nr})</span>`:'—'}</td>${hasP?`<td class="n">${x.P?'<b>'+brl(x.P.m2/(x.P.fu||FU0))+'</b>':'—'}</td>`:''}</tr>`).join('')}
+  </tbody></table></div><p class="note">Clique num número para ver todas as transações dele${hasP?' e a estimativa de valor por tamanho de unidade':''}.</p></div>`;
+  $('#ro').onchange=ev=>{resOnly=ev.target.checked;street(miss)};
+  out.querySelectorAll('tr.click').forEach(tr=>tr.onclick=()=>{const k=tr.dataset.k;q.value=lg+(k==='s/n'?'':' '+k);building(k==='s/n'?'':k)})}
+
+const CONF={'10+':'confiança alta','3-9':'confiança boa','1-2':'confiança média','0':'confiança baixa'};
+function estimate(P){if(!P)return'';
+  const pl=(n,a,b)=>n+' '+(n===1?a:b);
+  const prof=[pl(P.ap,'apartamento','apartamentos'),pl(new Set(P.tipos.map(t=>Math.round(t[0]*(P.fu||FU0)))).size,'tamanho','tamanhos'),
+    P.vg?pl(P.vg,'vaga com matrícula própria','vagas com matrícula própria'):'garagem sem matrícula própria',
+    P.lj?pl(P.lj,'loja/sala','lojas/salas'):'',P.ca?pl(P.ca,'casa','casas'):'','padrão '+P.pad,P.ano?'construído em '+P.ano:'',P.tip?P.tip.toLowerCase():''].filter(Boolean).join(' · ');
+  const fx=P.fu||FU0,tm=new Map();for(const[a,n]of P.tipos){const k=Math.round(a*fx);const o=tm.get(k)||[0,0];o[0]+=a*n;o[1]+=n;tm.set(k,o)}
+  const tipos=[...tm.values()].map(([s,n])=>[s/n,n]).sort((a,b)=>a[0]-b[0]);
+  const fu=P.fu||null,mu=fu?P.m2/fu:P.m2;
+  return `<div class="est"><div class="em"><span>Valor estimado hoje, por m² ${fu?'de área útil (aprox.)':'de área PBH'}</span><b>${brl(mu)}</b>
+  <p>Faixa provável: ${brl(mu*P.lo)} a ${brl(mu*P.hi)} por m²</p><span class="conf">${CONF[P.conf]}</span>
+  ${fu?`<p class="note" style="margin-top:8px">Área útil = área PBH × ${String(fu).replace('.',',')} (${P.fuc?'fator conferido neste prédio: '+esc(P.fuf):'fator provisório, '+esc(P.fuf)+'; varia de prédio para prédio'}).</p>`:''}
+  <p class="note" style="margin-top:8px">${P.n?`Baseado em ${pl(P.n,'venda','vendas')} deste prédio desde 2012, corrigidas para hoje, combinadas com os prédios vizinhos.`:'Nenhuma venda deste prédio desde 2012: estimado só pelos prédios vizinhos.'}</p>
+  ${P.n===0&&!P.ano?'<p class="warn">Se o prédio for novo, o valor real tende a ser bem maior que esta estimativa.</p>':''}</div>
+  <div><h3>Perfil do prédio (cadastro PBH, __CADASTRO__)</h3><p class="pf">${esc(prof)}</p>
+  ${tipos.length?`<div class="scroll"><table class="stack"><thead><tr><th class="n">Área útil ≈</th><th class="n">Unidades</th><th class="n">Valor estimado</th><th class="n">Faixa provável</th></tr></thead><tbody>
+  ${tipos.map(([a,n])=>`<tr><td class="n"><b>${Math.round(a*(fu||FU0))} m²</b></td><td class="n">${n}</td><td class="n"><b>${brl(a*P.m2)}</b></td><td class="n">${brl(a*P.m2*P.lo)} – ${brl(a*P.m2*P.hi)}</td></tr>`).join('')}</tbody></table></div>`:''}
+  <p class="note">${P.vg?'As vagas têm matrícula própria: quando vendidas junto, o valor delas entrou no cálculo.':'A garagem já está embutida na área PBH dos apartamentos.'} A faixa é onde caíram 60% das vendas reais nos testes (do 20º ao 80º percentil).</p><p class="note">Área útil ≈ área registrada na PBH (que inclui a parte de hall, lazer e garagem) × fator do prédio. O valor estimado não depende do fator: é o preço da unidade inteira.</p></div></div>`}
+function building(num){const{lg}=cur;const P=cur.pm.get(lg+'|'+num);const fu=P?.fu||FU0;
+  const all=cur.rows.filter(r=>r.num===num).map(r=>{const au=r.tp==='AP'?(r.ac?r.ac*fu:null):r.tp==='LV'?r.at:r.ac;return{...r,au,mu:r.vd&&au>0?r.vd/au:null}});
+  let rows=all.filter(r=>(!resOnly||r.oc==='R')&&(!unitF||norm(r.comp).includes(norm(unitF))));
+  const k={d:r=>r.d,comp:r=>r.comp,tp:r=>r.tp,au:r=>r.au??-1,vd:r=>r.vd??-1,mu:r=>r.mu??-1}[sortK]||(r=>r.d);
+  rows=[...rows].sort((a,b)=>(k(a)>k(b)?1:k(a)<k(b)?-1:0)*sortDir);
+  const last=cur.rows.reduce((a,r)=>r.d>a?r.d:a,'');const cut=String(+last.slice(0,4)-2)+last.slice(4);
+  const resAll=all.filter(r=>r.oc==='R'&&r.mu&&r.tp!=='VR');const res=resAll.filter(r=>!(r.div>=.2));const nx=resAll.length-res.length;const rec2=res.filter(r=>r.d>=cut);
+  const m2r=med(rec2.map(r=>r.mu)),m2a=med(res.map(r=>r.mu));
+  const anos=[...new Set(all.map(r=>r.ano).filter(Boolean))];
+  const ar=med(res.map(r=>r.au).filter(Boolean));
+  const fuTxt=P?.fuc?'fator conferido neste prédio':'fator provisório '+String(fu).replace('.',',');
+  out.innerHTML=`<div class="res"><div class="head"><div><h2>${esc(lg)}, ${esc(num||'s/n')}</h2><p>${esc(all[0]?.bai||P?.bai||'')}${anos.length?' · construído em '+esc(anos.join(', ')):''}</p></div>
+  <button class="g" id="back">← Todos os números da rua</button></div>
+  ${estimate(P)}
+  <div class="kpis"><div class="kpi${P?'':' on'}"><span>R$/m² útil mediano, últimos 24 meses</span><b>${m2r?brl(m2r):'—'}</b><em>${rec2.length} ${rec2.length===1?'venda residencial':'vendas residenciais'}</em></div>
+  <div class="kpi"><span>R$/m² útil mediano, desde 2008</span><b>${m2a?brl(m2a):'—'}</b><em>${res.length} vendas, sem correção${nx?` · ${nx} fora (declarado muito abaixo da avaliação da PBH)`:''}</em></div>
+  <div class="kpi"><span>Negócios registrados</span><b>${all.length}</b><em>${dt(all.reduce((a,r)=>!a||r.d<a?r.d:a,''))} a ${dt(all.reduce((a,r)=>r.d>a?r.d:a,''))}</em></div>
+  <div class="kpi"><span>Área útil mediana (aprox.)</span><b>${ar?Math.round(ar)+' m²':'—'}</b><em>${esc(fuTxt)}</em></div></div>
+  <div class="fig" id="fig"><svg id="ch" role="img" aria-label="R$ por m² útil de cada venda ao longo do tempo, com comparações opcionais"></svg></div>
+  <div class="ovl" role="group" aria-label="Comparar com">
+    <span>Comparar com:</span>
+    <label><input type="checkbox" data-o="ipca" ${OVL.ipca?'checked':''}><i class="sw" style="--c:var(--c-ipca)"></i>IPCA</label>
+    <label><input type="checkbox" data-o="cdi" ${OVL.cdi?'checked':''}><i class="sw" style="--c:var(--c-cdi)"></i>CDI</label>
+    <label><input type="checkbox" data-o="usd" ${OVL.usd?'checked':''}><i class="sw" style="--c:var(--c-usd)"></i>m² em dólar</label>
+  </div>
+  <p class="leg" id="leg"></p>
+  <div class="bar"><label><input type="checkbox" id="ro" ${resOnly?'checked':''}> Só residencial</label><input type="text" id="uf" placeholder="Filtrar unidade (ex.: 501)" value="${esc(unitF)}" aria-label="Filtrar unidade"><span class="sp"></span><button class="g" id="cp">Copiar tabela</button></div>
+  <div class="scroll"><table class="stack" id="tb"><thead><tr><th data-s="d">Data</th><th data-s="comp">Unidade</th><th data-s="tp">Tipo</th><th data-s="au" class="n">Área útil ≈</th><th data-s="vd" class="n">Valor declarado</th><th data-s="mu" class="n">R$/m² útil ≈</th></tr></thead><tbody>
+  ${rows.map(r=>`<tr><td class="n">${dt(r.d)}</td><td>${esc(r.comp)||'—'}${r.vagas?`<br><span class="note">+ ${esc(r.vagas.join(', '))}</span>`:''}</td><td><span class="tag">${esc(TIPO[r.tp]||r.tp)}</span></td><td class="n">${r.au?Math.round(r.au)+' m²':'—'}</td><td class="n">${brl(r.vd)}${r.div!=null&&r.div>=.2?`<br><span class="flag">PBH avaliou ${Math.round(r.div*100)}% acima</span>`:''}</td><td class="n">${r.mu?brl(r.mu):'—'}</td></tr>`).join('')||'<tr><td colspan="6">Nenhuma transação com esses filtros.</td></tr>'}
+  </tbody></table></div><p class="note">${rows.length} de ${all.length} negócios exibidos. Área útil ≈ área registrada na PBH × ${String(fu).replace('.',',')} (${esc(fuTxt)}); para casas e lotes, a área registrada. Vagas avulsas pagas no mesmo dia de um apartamento foram somadas a ele. Quando a PBH avaliou o imóvel 20% ou mais acima do valor declarado, a venda aparece sinalizada e fica fora das medianas. Clique nos títulos das colunas para ordenar.</p></div>`;
+  out.querySelectorAll('th[data-s]').forEach(th=>{if(th.dataset.s===sortK)th.classList.add(sortDir>0?'asc':'desc');th.onclick=()=>{sortDir=sortK===th.dataset.s?-sortDir:-1;sortK=th.dataset.s;building(num)}});
+  $('#back').onclick=()=>{q.value=lg;street()};
+  $('#ro').onchange=ev=>{resOnly=ev.target.checked;building(num)};
+  const uf=$('#uf');uf.oninput=()=>{unitF=uf.value;const p=uf.selectionStart;building(num);const u=$('#uf');u.focus();u.setSelectionRange(p,p)};
+  out.querySelectorAll('.ovl input').forEach(c=>c.onchange=()=>{OVL[c.dataset.o]=c.checked;try{localStorage.setItem('itbi_ovl',JSON.stringify(OVL))}catch{}chart(resAll)});
+  $('#cp').onclick=async ev=>{const t=[['Data','Unidade','Tipo','Area util aprox m2','Valor declarado','R$/m2 util aprox'].join('\t'),...rows.map(r=>[dt(r.d),r.comp,r.tp,r.au?Math.round(r.au):'',r.vd,r.mu?Math.round(r.mu):''].join('\t'))].join('\n');
+    try{await navigator.clipboard.writeText(t);ev.target.textContent='Copiado ✓'}catch{ev.target.textContent='Não foi possível copiar'}};
+  chart(resAll)}
+
+/* séries econômicas mensais: ECON.m = 'AAAA-MM', ipca/cdi em % no mês, usd = R$ por US$ (fim do mês) */
+const EI=new Map(ECON.m.map((m,i)=>[m,i]));
+function acum(serie,m0,m1){const a=EI.get(m0),b=EI.get(m1);if(a==null||b==null)return null;let f=1;for(let i=a+1;i<=b;i++)f*=1+ECON[serie][i]/100;return f}
+const mes=d=>d.slice(0,7);
+let ro=null;
+function chart(pts){const s=$('#ch');if(!s)return;if(ro)ro.disconnect();
+  const ok=pts.filter(r=>!(r.div>=.2));
+  const by=new Map();for(const r of ok){const a=r.d.slice(0,4);if(!by.has(a))by.set(a,[]);by.get(a).push(r.mu)}
+  const yrs=[...by].sort((a,b)=>a[0]<b[0]?-1:1).map(([a,v])=>({a,v:med(v),n:v.length,m:a+'-07'}));
+  const lastM=ECON.m[ECON.m.length-1];
+  yrs.forEach(y=>{if(y.m>lastM)y.m=lastM});
+  const base=yrs[0];
+  const ser=[];
+  if(base&&yrs.length>1){
+    const m0=base.m,ms=ECON.m.filter(m=>m>=m0);
+    if(OVL.ipca)ser.push({k:'ipca',c:'var(--c-ipca)',pts:ms.filter((m,i)=>i%3===0||m===lastM).map(m=>[m,base.v*acum('ipca',m0,m)])});
+    if(OVL.cdi)ser.push({k:'cdi',c:'var(--c-cdi)',pts:ms.filter((m,i)=>i%3===0||m===lastM).map(m=>[m,base.v*acum('cdi',m0,m)])});
+    if(OVL.usd){const fx0=ECON.usd[EI.get(m0)];ser.push({k:'usd',c:'var(--c-usd)',dots:1,pts:yrs.map(y=>[y.m,y.v*fx0/ECON.usd[EI.get(y.m)]])})}
+  }
+  const legP=[`<i style="background:var(--ink)"></i>venda (R$/m² útil)`,`<i style="background:var(--warn)"></i>PBH avaliou 20%+ acima do declarado (fora das medianas)`,`<b class="ln"></b>mediana do ano`];
+  if(base&&yrs.length>1){const fim=yrs[yrs.length-1];
+    const tx=(f)=>(f>=1?'+':'')+Math.round((f-1)*100)+'%';
+    const imv=fim.v/base.v;
+    let t=`Mediana do prédio: ${brl(base.v)} (${base.a}) → ${brl(fim.v)} (${fim.a}), ${tx(imv)}.`;
+    if(OVL.ipca){const f=acum('ipca',base.m,fim.m);t+=` IPCA no período: ${tx(f)}${imv>f?' — o imóvel ganhou da inflação':' — o imóvel perdeu para a inflação'}.`}
+    if(OVL.cdi){const f=acum('cdi',base.m,fim.m);t+=` CDI: ${tx(f)}.`}
+    if(OVL.usd){const f=ECON.usd[EI.get(base.m)]/ECON.usd[EI.get(fim.m)]*imv;t+=` Em dólar: ${tx(f)} (linha tracejada: o m² em dólar, convertido a reais pelo câmbio de ${base.a}, ou seja, sem o efeito da alta do dólar).`}
+    legP.push(`<span class="sumtx">${t}</span>`)}
+  else if(OVL.ipca||OVL.cdi||OVL.usd)legP.push('<span class="sumtx">Comparações precisam de vendas em pelo menos dois anos diferentes.</span>');
+  $('#leg').innerHTML=legP.join(' &nbsp; ');
+  const draw=()=>{const W=s.clientWidth,H=s.clientHeight;if(!W)return;
+    if(!ok.length&&!pts.length){s.innerHTML=`<text x="${W/2}" y="${H/2}" text-anchor="middle" fill="currentColor" font-size="14">Sem vendas residenciais com área informada</text>`;return}
+    const t=d=>Date.parse(d.length===7?d+'-15':d);
+    const allY=pts.map(r=>r.mu).concat(ser.flatMap(x=>x.pts.map(p=>p[1]))).sort((a,b)=>a-b);
+    const y1=allY[Math.floor(allY.length*.97)]*1.08||1,y0=0;
+    const x0=Date.parse('2008-01-01'),x1=Date.parse('2026-12-01');
+    const m={l:W<520?44:62,r:14,t:14,b:28},X=v=>m.l+(v-x0)/(x1-x0)*(W-m.l-m.r),Y=v=>H-m.b-(Math.min(v,y1)-y0)/(y1-y0)*(H-m.t-m.b);
+    let g='';const step=Math.pow(10,Math.floor(Math.log10(y1/4)));const st=[1,2,5,10].map(k=>k*step).find(k=>y1/k<=5);
+    for(let v=0;v<=y1;v+=st)g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--ln)"/><text x="${m.l-6}" y="${Y(v)+4}" text-anchor="end" font-size="12" fill="var(--mut)">${v>=1000?(v/1000).toLocaleString('pt-BR')+' mil':v}</text>`;
+    const yStep=W<520?4:2;for(let a=2008;a<=2026;a+=yStep){const x=X(Date.parse(a+'-01-01'));g+=`<text x="${x}" y="${H-8}" text-anchor="middle" font-size="12" fill="var(--mut)">${a}</text>`}
+    for(const sr of ser){const pp=sr.pts.map(p=>[X(t(p[0])).toFixed(1),Y(p[1]).toFixed(1)]);
+      g+=`<polyline points="${pp.map(p=>p.join(',')).join(' ')}" fill="none" stroke="${sr.c}" stroke-width="2.5"${sr.dots?' stroke-dasharray="6 4"':''}/>`;
+      if(sr.dots)g+=pp.map(p=>`<rect x="${p[0]-3.5}" y="${p[1]-3.5}" width="7" height="7" fill="${sr.c}"/>`).join('')}
+    if(yrs.length>1)g+=`<polyline points="${yrs.map(y=>X(t(y.m)).toFixed(1)+','+Y(y.v).toFixed(1)).join(' ')}" fill="none" stroke="var(--ink)" stroke-width="2" stroke-opacity=".45"/>`;
+    for(const r of pts){const w=r.div!=null&&r.div>=.2;g+=`<circle cx="${X(t(r.d)).toFixed(1)}" cy="${Y(r.mu).toFixed(1)}" r="4" fill="${w?'var(--warn)':'var(--ink)'}" fill-opacity=".75"><title>${dt(r.d)} · ${esc(r.comp)} · ${brl(r.mu)}/m² útil · ${brl(r.vd)}</title></circle>`}
+    s.innerHTML=g};
+  ro=new ResizeObserver(draw);ro.observe(s);draw()}
+
+/* ---------- Ranking de bairros ---------- */
+const CRC=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}
+  return s=>{const b=new TextEncoder().encode(s);let c=0xFFFFFFFF;for(const x of b)c=t[(c^x)&255]^(c>>>8);return(c^0xFFFFFFFF)>>>0}})();
+let BAI=null,bcache=new Map(),BST={per:'12m',ord:'neg',f:''};
+const PERN={'12m':'Últimos 12 meses','24m':'Últimos 24 meses'};
+const titleCase=s=>s.toLowerCase().replace(/(^|\s)(\S)/g,(m,a,b)=>a+b.toUpperCase()).replace(/\b(De|Da|Do|Das|Dos|E)\b/g,w=>w.toLowerCase());
+async function bairros(){out.innerHTML='<p class="st">Carregando bairros…</p>';
+  try{if(!BAI){const r=await fetch('data/bairros.json');BAI=await r.json()}}catch(e){out.innerHTML='<p class="st">Não consegui carregar os bairros. Recarregue a página.</p>';return}
+  const M=BAI.meta,D=BAI.dados[BST.per]||{};
+  let L=Object.entries(D).map(([b,v])=>({b,neg:v[0],ap:v[1],m2:v[2],np:v[3],tk:v[4],nv:v[5]}));
+  if(BST.f)L=L.filter(x=>norm(x.b).includes(norm(BST.f)));
+  if(BST.ord==='m2')L=L.filter(x=>x.m2&&x.np>=5).sort((a,b)=>b.m2-a.m2);else L.sort((a,b)=>b.neg-a.neg);
+  const mx=Math.max(1,...L.map(x=>BST.ord==='m2'?x.m2:x.neg));
+  const per=BST.per==='12m'?`${dt(M.ini12)} a ${dt(M.fim)}`:BST.per==='24m'?`${dt(M.ini24)} a ${dt(M.fim)}`:BST.per;
+  const yrs=M.periodos.filter(p=>/^\d{4}$/.test(p)).sort().reverse();
+  const tot=Object.values(D).reduce((a,v)=>a+v[0],0);
+  out.innerHTML=`<div class="res"><div class="head"><div><h2>Ranking de bairros</h2><p>${per} · ${tot.toLocaleString('pt-BR')} negócios residenciais em ${Object.keys(D).length} bairros de BH</p></div></div>
+  <div class="bar">
+    <label>Período <select id="bp">${['12m','24m',...yrs].map(p=>`<option value="${p}"${p===BST.per?' selected':''}>${PERN[p]||p}</option>`).join('')}</select></label>
+    <div class="seg" role="group" aria-label="Ordenar"><button class="${BST.ord==='neg'?'on':''}" data-o="neg">Mais negociados</button><button class="${BST.ord==='m2'?'on':''}" data-o="m2">Mais caros</button></div>
+    <input type="text" id="bf" placeholder="Filtrar bairro" value="${esc(BST.f)}" aria-label="Filtrar bairro">
+  </div>
+  <div class="scroll"><table class="stack rank"><thead><tr><th class="n">#</th><th>Bairro</th><th class="n">Negócios residenciais</th><th class="n">R$/m² útil ≈</th><th class="n">Preço mediano (apto)</th><th class="n">Vendas em prédios novos</th><th class="w"></th></tr></thead><tbody>
+  ${L.slice(0,150).map((x,i)=>{const v=BST.ord==='m2'?x.m2:x.neg;return`<tr class="click" data-b="${esc(x.b)}"><td class="n">${i+1}</td><td><b>${esc(titleCase(x.b))}</b></td><td class="n">${x.neg.toLocaleString('pt-BR')}</td><td class="n">${x.m2?brl(x.m2)+` <span class="note">(${x.np} prédios)</span>`:'—'}</td><td class="n">${brl(x.tk)}</td><td class="n">${x.nv!=null&&x.ap?x.nv+'%':'—'}</td><td class="w"><span class="hb" style="width:${(v/mx*100).toFixed(1)}%"></span></td></tr>`}).join('')||'<tr><td colspan="7">Nenhum bairro com esses filtros.</td></tr>'}
+  </tbody></table></div>
+  <p class="note">${BST.ord==='m2'?'Só bairros com vendas em pelo menos 5 prédios. ':''}R$/m² útil = mediana entre os prédios do bairro (cada prédio conta uma vez, para um lançamento grande não dominar), com área útil ≈ área registrada na PBH × ${String(M.fu).replace('.',',')}, exceto nos prédios com fator conferido. Valores declarados, sem correção pela inflação; vendas que a PBH avaliou 20%+ acima do declarado ficam fora. "Prédios novos" = construídos até 3 anos antes do fim do período. Clique num bairro para ver os prédios.</p></div>`;
+  $('#bp').onchange=e=>{BST.per=e.target.value;bairros()};
+  out.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{BST.ord=b.dataset.o;bairros()});
+  const bf=$('#bf');bf.oninput=()=>{BST.f=bf.value;const p=bf.selectionStart;bairros().then(()=>{const u=$('#bf');u.focus();u.setSelectionRange(p,p)})};
+  out.querySelectorAll('tr.click').forEach(tr=>tr.onclick=()=>bairro(tr.dataset.b))}
+
+async function bairro(b){out.innerHTML='<p class="st">Carregando prédios…</p>';const s=CRC(b)%20;
+  try{if(!bcache.has(s)){const r=await fetch(`data/b${s}.json`);bcache.set(s,await r.json())}}catch(e){out.innerHTML='<p class="st">Não consegui carregar. Recarregue a página.</p>';return}
+  const L=(bcache.get(s)[b]||[]).filter(x=>x[7]!=='LV');const v=BAI?.dados['24m']?.[b];
+  out.innerHTML=`<div class="res"><div class="head"><div><h2>${esc(titleCase(b))}</h2><p>${L.length} endereços com negócios residenciais desde 2008${v?` · últimos 24 meses: ${v[0]} negócios, R$/m² útil ≈ ${brl(v[2])}`:''}</p></div><button class="g" id="bk">← Ranking de bairros</button></div>
+  <div class="scroll"><table class="stack"><thead><tr><th>Endereço</th><th>Tipo</th><th class="n">Ano constr.</th><th class="n">Negócios (24 meses)</th><th class="n">R$/m² útil ≈ (24 meses)</th><th class="n">Negócios desde 2008</th></tr></thead><tbody>
+  ${L.slice(0,300).map(x=>`<tr class="click" data-q="${esc(x[0]+' '+x[1])}"><td><b>${esc(x[0])}, ${esc(x[1]||'s/n')}</b></td><td><span class="tag">${esc(TIPO[x[7]]||x[7])}</span></td><td class="n">${x[6]||'—'}</td><td class="n">${x[2]}</td><td class="n">${x[3]?brl(x[3]):'—'}</td><td class="n">${x[4]}</td></tr>`).join('')}
+  </tbody></table></div><p class="note">${L.length>300?'Mostrando os 300 endereços mais negociados. ':''}Ordenado pelos negócios dos últimos 24 meses. Clique para abrir o prédio.</p></div>`;
+  $('#bk').onclick=()=>bairros();
+  out.querySelectorAll('tr.click').forEach(tr=>tr.onclick=()=>{tab('a');q.value=tr.dataset.q;$('#f').requestSubmit()})}
+
+function tab(t){$('#tA').classList.toggle('on',t==='a');$('#tB').classList.toggle('on',t==='b');$('#tA').setAttribute('aria-pressed',t==='a');$('#tB').setAttribute('aria-pressed',t==='b');
+  $('#f').hidden=t!=='a';hint.hidden=t!=='a';$('#sub').textContent=t==='a'?'Todas as transmissões de imóveis quitadas na Prefeitura desde 2008, por endereço. Digite a rua e o número: “Rua Chile 197”.':'Onde mais se compra e onde o m² é mais caro, com os negócios registrados no ITBI.';
+  if(t==='b')bairros();else if(cur)street();else out.innerHTML='<p class="st">Os resultados aparecem aqui.</p>'}
+$('#tA').onclick=()=>tab('a');$('#tB').onclick=()=>tab('b');
+
+fetch('data/idx.json').then(r=>r.json()).then(d=>{IDX=d;
+  hint.innerHTML=`${d.length.toLocaleString('pt-BR')} ruas na base. Exemplos: <b>Rua Chile 197</b> · <b>Avenida Afonso Pena 2755</b> · <b>Rua Paraiba</b>`;
+  let last='';try{last=localStorage.getItem('itbi_q')||''}catch{}
+  if(last){q.value=last;$('#f').requestSubmit()}})
+ .catch(()=>{hint.textContent='Não consegui carregar o índice de ruas. Recarregue a página.'});
+const save=()=>{try{localStorage.setItem('itbi_q',q.value)}catch{}};$('#f').addEventListener('submit',save);out.addEventListener('click',save);
+}
+</script>
+</body>
+</html>
