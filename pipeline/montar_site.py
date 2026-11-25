@@ -12,6 +12,17 @@ def mes_ano(aaaa_mm):
     return f"{MESES[int(aaaa_mm[5:7]) - 1]}/{aaaa_mm[:4]}"
 
 
+def cad_txt(dc):
+    """'20260504-20261103' -> 'mai a nov/2026'; uma só data -> 'mai/2026'."""
+    if not dc:
+        return "versão mais recente"
+    ds = sorted({x[:6] for x in dc.split("-")})
+    a, b = mes_ano(f"{ds[0][:4]}-{ds[0][4:]}"), mes_ano(f"{ds[-1][:4]}-{ds[-1][4:]}")
+    if a == b:
+        return a
+    return f"{a.split('/')[0]} a {b}" if a[-4:] == b[-4:] else f"{a} a {b}"
+
+
 def main(modelo, saida, itbi, valores, econ, N=200):
     datas = pd.read_csv(itbi, usecols=["data"], dtype=str).data
     datas = datas[datas.str.match(r"^\d{4}-\d{2}")]
@@ -21,7 +32,7 @@ def main(modelo, saida, itbi, valores, econ, N=200):
     html = open(modelo).read()
     html = (html.replace("__ECON__", json.dumps(e, separators=(",", ":")))
                 .replace("__PERIODO_ITBI__", f"{mes_ano(datas.min())} a {mes_ano(datas.max())}")
-                .replace("__CADASTRO__", mes_ano(f"{dc[:4]}-{dc[4:6]}") if dc else "versão mais recente")
+                .replace("__CADASTRO__", cad_txt(dc))
                 .replace("__ECON_FIM__", mes_ano(e["m"][-1])))
     assert not any(k in html for k in ("__ECON__", "__PERIODO_ITBI__", "__CADASTRO__", "__ECON_FIM__"))
     open(f"{saida}/index.html", "w").write(html)

@@ -33,7 +33,7 @@ def main(src, outdir, N, calib=None):
         if (r.lg, r.num) in cal:
             rec["fu"], rec["fuf"] = cal[(r.lg, r.num)]; rec["fuc"] = 1
         elif f_glob:
-            rec["fu"], rec["fuf"], rec["fuc"] = f_glob, f"média de {n_cal} prédios conferidos", 0
+            rec["fu"], rec["fuf"], rec["fuc"] = f_glob, f"mediana de {n_cal} prédios conferidos", 0
         sh[zlib.crc32(r.lg.encode()) % N].append([r.lg, r.num, rec])
     for s, rows in sh.items():
         with open(f"{outdir}/p{s}.json", "w") as o:

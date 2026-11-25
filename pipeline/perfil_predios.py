@@ -61,7 +61,7 @@ def ler_cadastros(pasta):
         if m:
             datas.append(m.group(1))
         print(f"  {os.path.basename(f)}: {len(d)} unidades")
-    return pd.concat(partes, ignore_index=True), (max(datas) if datas else "")
+    return pd.concat(partes, ignore_index=True), (f"{min(datas)}-{max(datas)}" if datas else "")
 
 
 def main(src, out):
