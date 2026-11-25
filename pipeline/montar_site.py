@@ -45,6 +45,12 @@ def main(modelo, saida, itbi, valores, econ, N=200):
     with open(f"{saida}/data/idx.json", "w") as o:
         o.write("[\n" + ",\n".join(json.dumps(x, ensure_ascii=False, separators=(",", ":")) for x in idx) + "\n]")
     open(f"{saida}/.nojekyll", "w").close()
+    from datetime import datetime, timezone
+    resumo = {"gerado_em": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ"), "itbi_de": datas.min()[:7],
+              "itbi_ate": datas.max()[:7], "negocios": int(len(datas)), "cadastro": dc,
+              "predios_com_estimativa": int(len(p)), "economia_ate": e["m"][-1]}
+    with open("dados/ultima_atualizacao.json", "w") as o:
+        json.dump(resumo, o, ensure_ascii=False, indent=1)
     print(f"Site montado em {saida}: ITBI {mes_ano(datas.min())} a {mes_ano(datas.max())}, cadastro {dc}, {len(idx)} ruas")
 
 

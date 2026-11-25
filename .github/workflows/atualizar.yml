@@ -10,7 +10,7 @@ on:
     paths: ["pipeline/**", "site/**", "dados/calibracao.csv", "dados/manual/**", ".github/workflows/atualizar.yml"]
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -41,6 +41,16 @@ jobs:
 
       - name: Baixar, conferir e recalcular
         run: bash pipeline/rodar.sh
+
+      # registra o resumo da atualização no repositório: mantém o histórico e impede que o GitHub
+      # desligue a rotina agendada (ele desliga após 60 dias sem alterações em repositórios públicos)
+      - name: Registrar atualização
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dados/econ.json dados/ultima_atualizacao.json
+          git diff --cached --quiet || git commit -m "Atualização automática $(date -u +%Y-%m-%d) [skip ci]"
+          git push || echo "não foi possível registrar (sem efeito no site)"
 
       - uses: actions/upload-pages-artifact@v3
         with:
