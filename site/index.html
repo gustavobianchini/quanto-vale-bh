@@ -85,6 +85,10 @@ select{font:inherit;font-size:16px;min-height:44px;padding:6px 10px;border:2px s
 .rank td.w{width:22%;min-width:90px}.hb{display:block;height:10px;background:var(--ink);opacity:.8}
 .rank tr:first-child .hb{background:var(--hi);opacity:1;outline:1px solid var(--ink)}
 @media(max-width:600px){.rank td.w{display:none}.tabs{width:100%}.tabs button{flex:1}}
+h3.sec{font-size:20px;font-weight:500;margin:28px 0 8px}
+.duo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 28px}@media(max-width:760px){.duo{grid-template-columns:minmax(0,1fr)}}
+b.up{color:light-dark(#15803d,#4ade80)}b.dn{color:var(--warn)}
+a.go,a.gob{color:inherit;font-weight:500;text-decoration:underline;text-decoration-color:var(--ln);text-underline-offset:3px}
 .foot{background:var(--pl2);font-size:14px;color:var(--mut)}
 .foot p{max-width:80ch;margin:0 0 8px}
 @media(max-width:600px){table{font-size:13px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px;border-bottom:1px solid var(--ln)}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:8em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:7.5em;margin-inline-start:-8em;white-space:normal;color:var(--mut)}.stack td:empty{display:none}.fig{height:240px}}
@@ -95,7 +99,7 @@ select{font:inherit;font-size:16px;min-height:44px;padding:6px 10px;border:2px s
 <body>
 <section class="band top"><div class="wrap">
   <h1>Negócios registrados no ITBI de Belo Horizonte</h1>
-  <nav class="tabs" aria-label="Seções"><button type="button" id="tA" class="on" aria-pressed="true">Buscar endereço</button><button type="button" id="tB" aria-pressed="false">Ranking de bairros</button></nav>
+  <nav class="tabs" aria-label="Seções"><button type="button" id="tA" class="on" aria-pressed="true">Buscar endereço</button><button type="button" id="tB" aria-pressed="false">Ranking de bairros</button><button type="button" id="tC" aria-pressed="false">Destaques do mês</button></nav>
   <p class="sub" id="sub">Todas as transmissões de imóveis quitadas na Prefeitura desde 2008, por endereço. Digite a rua e o número: “Rua Chile 197”.</p>
   <form class="sbox" id="f" autocomplete="off">
     <input id="q" type="search" placeholder="Rua, avenida… e número" aria-label="Endereço" aria-autocomplete="list" aria-controls="sug">
@@ -335,10 +339,45 @@ async function bairro(b){out.innerHTML='<p class="st">Carregando prédios…</p>
   $('#bk').onclick=()=>bairros();
   out.querySelectorAll('tr.click').forEach(tr=>tr.onclick=()=>{tab('a');q.value=tr.dataset.q;$('#f').requestSubmit()})}
 
-function tab(t){$('#tA').classList.toggle('on',t==='a');$('#tB').classList.toggle('on',t==='b');$('#tA').setAttribute('aria-pressed',t==='a');$('#tB').setAttribute('aria-pressed',t==='b');
-  $('#f').hidden=t!=='a';hint.hidden=t!=='a';$('#sub').textContent=t==='a'?'Todas as transmissões de imóveis quitadas na Prefeitura desde 2008, por endereço. Digite a rua e o número: “Rua Chile 197”.':'Onde mais se compra e onde o m² é mais caro, com os negócios registrados no ITBI.';
-  if(t==='b')bairros();else if(cur)street();else out.innerHTML='<p class="st">Os resultados aparecem aqui.</p>'}
-$('#tA').onclick=()=>tab('a');$('#tB').onclick=()=>tab('b');
+/* ---------- Destaques do mês ---------- */
+let DST=null,dstMes=null;
+const pct=(v,s=true)=>v==null?'—':(s&&v>0?'+':'')+(v*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%';
+const mesTxt=m=>{const M=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];return M[+m.slice(5,7)-1]+'/'+m.slice(0,4)};
+const end=x=>`<a href="#" class="go" data-q="${esc(x.lg+' '+x.num)}">${esc(x.lg)}, ${esc(x.num||'s/n')}</a>`;
+async function destaques(){out.innerHTML='<p class="st">Carregando destaques…</p>';
+  try{if(!DST){const r=await fetch('data/destaques.json');DST=await r.json()}}catch(e){out.innerHTML='<p class="st">Não consegui carregar os destaques. Recarregue a página.</p>';return}
+  const M=DST.meses.find(m=>m.mes===dstMes)||DST.meses[0];dstMes=M.mes;
+  const anoAnt=M.negocios_ano_ant?M.negocios/M.negocios_ano_ant-1:null;
+  const novo=a=>+a>=+M.mes.slice(0,4)-2;
+  const tbl=(cab,linhas)=>`<div class="scroll"><table class="stack"><thead><tr>${cab.map(c=>`<th${c[1]?' class="n"':''}>${c[0]}</th>`).join('')}</tr></thead><tbody>${linhas.join('')||`<tr><td colspan="${cab.length}">Sem dados suficientes neste mês.</td></tr>`}</tbody></table></div>`;
+  const venda=x=>`<tr><td>${end(x)}</td><td>${esc(titleCase(x.bai||''))}</td><td class="n">${dt(x.data)}</td><td class="n"><b>${brl(x.valor)}</b></td><td class="n">${x.au?x.au+' m²':'—'}</td><td class="n">${brl(x.mu)}</td></tr>`;
+  const cabV=[['Endereço'],['Bairro'],['Data',1],['Valor',1],['Área útil ≈',1],['R$/m² útil ≈',1]];
+  const rev=x=>`<tr><td>${end(x)}</td><td>${esc(titleCase(x.bai||''))}</td><td class="n">${brl(x.v_ant)} <span class="note">(${x.d_ant.slice(0,4)})</span></td><td class="n">${brl(x.valor)}</td><td class="n">${pct(x.nominal)}</td><td class="n"><b class="${x.real>=0?'up':'dn'}">${pct(x.real)}</b><br><span class="note">${pct(x.real_aa)} ao ano</span></td></tr>`;
+  const cabR=[['Endereço'],['Bairro'],['Comprado por',1],['Vendido por',1],['Variação',1],['Acima da inflação',1]];
+  const bz=x=>`<tr><td><a href="#" class="gob" data-b="${esc(x.bai)}">${esc(titleCase(x.bai))}</a></td><td class="n">${brl(x.m2_ant)}</td><td class="n">${brl(x.m2)}</td><td class="n"><b class="${x.var>=0?'up':'dn'}">${pct(x.var)}</b></td></tr>`;
+  const cabB=[['Bairro'],['Antes',1],['Agora',1],['Variação',1]];
+  out.innerHTML=`<div class="res"><div class="head"><div><h2>Destaques de ${mesTxt(M.mes)}</h2><p>Negócios residenciais registrados no ITBI no mês. Atualizado todo mês com o novo relatório da PBH.</p></div>
+  <label>Mês <select id="dm">${DST.meses.map(m=>`<option value="${m.mes}"${m.mes===M.mes?' selected':''}>${mesTxt(m.mes)}</option>`).join('')}</select></label></div>
+  <div class="kpis"><div class="kpi on"><span>Negócios residenciais no mês</span><b>${M.negocios.toLocaleString('pt-BR')}</b><em>${anoAnt!=null?pct(anoAnt)+' contra '+mesTxt(M.mes.replace(/^\d{4}/,y=>y-1)):''}</em></div>
+  <div class="kpi"><span>Revendas (unidade já vendida antes)</span><b>${M.revendas_n.toLocaleString('pt-BR')}</b><em>compra anterior há 2 anos ou mais</em></div>
+  <div class="kpi"><span>Ganho mediano das revendas, acima do IPCA</span><b>${pct(M.revendas_mediana_real)}</b><em>no período entre compra e venda</em></div></div>
+  <h3 class="sec">Vendas mais caras</h3>${tbl(cabV,M.mais_caras.map(venda))}
+  <h3 class="sec">Maior R$ por m² útil</h3>${tbl(cabV,M.maior_m2.map(venda))}
+  <div class="duo"><div><h3 class="sec">Prédios mais negociados</h3>${tbl([['Endereço'],['Bairro'],['Vendas',1],['R$/m² útil ≈',1]],M.predios.map(x=>`<tr><td>${end(x)}${novo(x.ano)?' <span class="tag">lançamento</span>':''}</td><td>${esc(titleCase(x.bai||''))}</td><td class="n"><b>${x.n}</b></td><td class="n">${brl(x.mu)}</td></tr>`))}</div>
+  <div><h3 class="sec">Bairros mais negociados</h3>${tbl([['Bairro'],['Negócios',1]],M.bairros.map(x=>`<tr><td><a href="#" class="gob" data-b="${esc(x.bai)}">${esc(titleCase(x.bai))}</a></td><td class="n"><b>${x.n}</b></td></tr>`))}</div></div>
+  <h3 class="sec">Revendas que mais valorizaram</h3>${tbl(cabR,M.valorizaram.map(rev))}
+  <h3 class="sec">Revendas que mais desvalorizaram</h3>${tbl(cabR,M.desvalorizaram.map(rev))}
+  <p class="note">Mesma unidade (mesmo endereço, apartamento e área) vendida de novo após 2 anos ou mais, ordenada pelo ganho real por ano. Diferenças grandes podem refletir reforma, compra abaixo do mercado (leilão, venda entre parentes) ou valor declarado impreciso.</p>
+  <div class="duo"><div><h3 class="sec">Bairros que mais subiram</h3>${tbl(cabB,M.bairros_subiram.map(bz))}</div><div><h3 class="sec">Bairros que mais caíram</h3>${tbl(cabB,M.bairros_cairam.map(bz))}</div></div>
+  <p class="note">"Agora" = R$/m² útil dos 12 meses até ${mesTxt(M.mes)}; "antes" = os 12 meses anteriores (mediana entre prédios, só bairros com 15+ prédios negociados nos dois períodos). IPCA no mesmo intervalo: ${pct(M.bairros_ipca)}. Valores declarados, sem as vendas que a PBH avaliou 20%+ acima.</p></div>`;
+  $('#dm').onchange=e=>{dstMes=e.target.value;destaques()};
+  out.querySelectorAll('a.go').forEach(a=>a.onclick=ev=>{ev.preventDefault();tab('a');q.value=a.dataset.q;$('#f').requestSubmit()});
+  out.querySelectorAll('a.gob').forEach(a=>a.onclick=ev=>{ev.preventDefault();tab('b',true);bairro(a.dataset.b)})}
+
+function tab(t,semCarregar){for(const[k,id]of[['a','#tA'],['b','#tB'],['c','#tC']]){$(id).classList.toggle('on',t===k);$(id).setAttribute('aria-pressed',t===k)}
+  $('#f').hidden=t!=='a';hint.hidden=t!=='a';$('#sub').textContent={a:'Todas as transmissões de imóveis quitadas na Prefeitura desde 2008, por endereço. Digite a rua e o número: “Rua Chile 197”.',b:'Onde mais se compra e onde o m² é mais caro, com os negócios registrados no ITBI.',c:'O que aconteceu no mercado no mês: vendas mais caras, prédios e bairros mais negociados, revendas que mais ganharam e perderam.'}[t];
+  if(semCarregar)return;if(t==='b')bairros();else if(t==='c')destaques();else if(cur)street();else out.innerHTML='<p class="st">Os resultados aparecem aqui.</p>'}
+$('#tA').onclick=()=>tab('a');$('#tB').onclick=()=>tab('b');$('#tC').onclick=()=>tab('c');
 
 fetch('data/idx.json').then(r=>r.json()).then(d=>{IDX=d;
   hint.innerHTML=`${d.length.toLocaleString('pt-BR')} ruas na base. Exemplos: <b>Rua Chile 197</b> · <b>Avenida Afonso Pena 2755</b> · <b>Rua Paraiba</b>`;
