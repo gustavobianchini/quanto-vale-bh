@@ -200,7 +200,7 @@ function street(miss){const{lg,rows}=cur;const g=new Map();
   $('#ro').onchange=ev=>{resOnly=ev.target.checked;street(miss)};
   out.querySelectorAll('tr.click').forEach(tr=>tr.onclick=()=>{const k=tr.dataset.k;q.value=lg+(k==='s/n'?'':' '+k);building(k==='s/n'?'':k)})}
 
-const CONF={'10+':'confiança alta','3-9':'confiança boa','1-2':'confiança média','0':'confiança baixa'};
+const CONF={alta:'confiança alta',boa:'confiança boa',media:'confiança média',baixa:'confiança baixa'};
 const PESOS=__PESOS__;
 const COMPN={predio:'Vendas neste prédio',ano:'Prédios da mesma época no bairro (±5 anos)',rua:'Outros prédios da rua',bairro:'Prédios do bairro'};
 const COMPB={predio:n=>`${n} ${n===1?'venda':'vendas'} desde 2012`,ano:n=>`${n} prédios`,rua:n=>`${n} prédios`,bairro:n=>`${n} prédios`};
@@ -239,12 +239,12 @@ function estimate(P,rows){if(!P)return'';
     <label>Estado de conservação <select id="avCons">${PESOS.conservacao.map(c=>`<option value="${c.id}"${c.id===AV.cons?' selected':''}>${esc(c.rotulo)}${c.ajuste?` (${c.ajuste>0?'+':''}${Math.round(c.ajuste*100)}%)`:''}</option>`).join('')}</select></label>
     <label>Área útil real em m², se souber <input type="number" id="avAu" min="15" max="2000" placeholder="${auEst?Math.round(auEst):''}" value="${esc(AV.au)}"></label>
    </div>
-   ${comp?`<h3 style="margin-top:14px">Como chegamos nesse valor</h3><div class="scroll"><table class="stack"><thead><tr><th>Componente</th><th class="n">R$/m² útil</th><th class="n">Peso</th></tr></thead><tbody>${comp}</tbody></table></div>
-   <p class="note">Valores de hoje (vendas corrigidas pelo índice de preços). Os pesos mudam conforme o número de vendas do prédio: quanto mais vendas, mais o próprio prédio conta. Foram calibrados com as vendas de out/2025 a set/2026: erro mediano de 9,9% em prédios com vendas anteriores.</p>`:`<p class="note">Prédio sem vendas registradas desde 2012: estimativa pelos 8 prédios vizinhos, ajustada por padrão de acabamento.</p>`}
+   ${comp?`<h3 style="margin-top:14px">Como chegamos nesse valor</h3><div class="scroll"><table class="stack"><thead><tr><th>Componente</th><th class="n">R$/m² útil</th><th class="n">Peso</th></tr></thead><tbody>${comp}${P.tend?`<tr><td>Tendência de preços até hoje<br><span class="note">ritmo recente do mercado de BH aplicado desde a última referência do índice</span></td><td class="n">${P.tend>0?'+':''}${(P.tend*100).toFixed(1).replace('.',',')}%</td><td class="n">—</td></tr>`:''}</tbody></table></div>
+   <p class="note">Valores de hoje (vendas corrigidas pelo índice de preços e pela tendência recente). O peso do próprio prédio cresce com o número de vendas e com o quanto são recentes (uma venda recente ≈ 80%, três ≈ 90%; vendas antigas valem menos). O restante vai 80% para prédios da mesma época no bairro, 10% para a rua e 10% para o bairro. Pesos calibrados com dados reais e testados em vendas que o modelo não viu (out/2025 a set/2026): erro mediano de 9,2%, e 81% das vendas ficaram a menos de 20% da estimativa.</p>`:`<p class="note">Prédio sem vendas registradas desde 2012: estimativa pelos 8 prédios vizinhos, ajustada por padrão de acabamento.</p>`}
    <p class="pf">${esc([pl(P.ap,'apartamento','apartamentos'),P.vg?pl(P.vg,'vaga com matrícula própria','vagas com matrícula própria'):'garagem sem matrícula própria',P.lj?pl(P.lj,'loja/sala','lojas/salas'):'',P.ano?'construído em '+P.ano:''].filter(Boolean).join(' · '))}</p>
    ${linksAnuncios(P,cur.lg)}
   </div></div>`}
-function ligarAvalie(num){const re=()=>building(num);
+function ligarAvalie(num){const re=()=>setTimeout(()=>building(num));
   const a=$('#avApt');if(a)a.onchange=()=>{AV.apt=a.value.trim();re()};
   const t=$('#avTam');if(t)t.onchange=()=>{AV.tam=+t.value;AV.apt='';re()};
   const c=$('#avCons');if(c)c.onchange=()=>{AV.cons=c.value;re()};

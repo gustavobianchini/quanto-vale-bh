@@ -5,11 +5,11 @@ Componentes por prédio:
   ano     - prédios do mesmo bairro com ano de construção parecido (±5 anos), últimos 3 anos
   rua     - outros prédios da mesma rua no mesmo bairro, últimos 3 anos
   bairro  - prédios do bairro, últimos 3 anos
-O valor final = média geométrica ponderada dos componentes disponíveis (pesos em dados/pesos.json;
-se um componente falta, seu peso é redistribuído entre os demais). O ajuste de conservação/reforma é aplicado na página.
+O valor final = média geométrica ponderada dos componentes (fórmula em dados/pesos.json), projetada até a data
+da avaliação pela tendência recente do índice. O ajuste de conservação/reforma é aplicado na página.
 
 Uso:
-  python pipeline/ponderado.py teste itbi_bh.csv pesos.json [corte]     -> validação fora da amostra
+  python pipeline/ponderado.py teste itbi_bh.csv pesos.json [corte] [fim] -> validação fora da amostra
   python pipeline/ponderado.py gerar itbi_bh.csv pesos.json saida.pkl   -> componentes atuais de todos os prédios
 """
 import itertools, json, sys
@@ -68,7 +68,7 @@ def componentes(a):
     # prédio
     g = a.groupby("b")
     p = pd.DataFrame({"m2_predio": g[["m2h", "w"]].apply(lambda d: wmed(d.m2h.values, d.w.values)),
-                      "n_predio": g.size(), "ultima": g.data.max(),
+                      "n_predio": g.size(), "neff": g.w.sum(), "ultima": g.data.max(),
                       "bairro": g.bairro.agg(lambda s: s.mode().iat[0]), "lg": g.logradouro.first(), "num": g.num.first(),
                       "anoc": g.anoc.agg(lambda s: s.mode().iat[0] if s.notna().any() else np.nan)})
     # janelas recentes: mediana de cada prédio nos últimos 3 anos
@@ -100,59 +100,57 @@ def componentes(a):
     return p, idx
 
 
-def combinar(p, pesos):
-    W = np.array([pesos[c] for c in COMP], dtype=float)
-    M = np.log(p[[f"m2_{c}" for c in COMP]].values)
-    disp = ~np.isnan(M)
-    w = np.where(disp, W, 0.0)
-    s = w.sum(1)
-    est = np.exp(np.nansum(np.where(disp, M, 0) * w, 1) / np.where(s > 0, s, np.nan))
-    return est
+def pesos(row_neff, disp, cfg):
+    """Pesos de cada componente para um prédio. disp: dict componente -> disponível?"""
+    f = cfg["formula"]
+    wp = row_neff / (row_neff + f["k"]) if disp["predio"] else 0.0
+    rest = 1 - wp
+    w = {"predio": wp, "ano": rest * f["resto"]["ano"], "rua": rest * f["resto"]["rua"], "bairro": rest * f["resto"]["bairro"]}
+    if not disp["ano"]:
+        w["rua"] += w["ano"] / 2; w["bairro"] += w["ano"] / 2; w["ano"] = 0.0
+    tot = sum(w[c] for c in COMP if disp[c])
+    return {c: (w[c] / tot if disp[c] and tot else 0.0) for c in COMP}
 
 
-def teste(itbi, pesos_json, corte="2025-10-01"):
-    pesos = json.load(open(pesos_json))["componentes"]
+def estimar(df, cfg, datas_aval, ref, g):
+    """Estimativa (R$/m² PBH) para cada linha de df na data de avaliação."""
+    out, W = [], []
+    for k, r in enumerate(df.itertuples()):
+        disp = {c: getattr(r, f"m2_{c}") == getattr(r, f"m2_{c}") for c in COMP}
+        w = pesos(r.neff if disp["predio"] else 0, disp, cfg)
+        if not any(w.values()):
+            out.append(np.nan); W.append(w); continue
+        lm = sum(w[c] * np.log(getattr(r, f"m2_{c}")) for c in COMP if w[c])
+        h = (pd.Timestamp(datas_aval[k]) - ref).days / 365.25 if cfg["formula"].get("tendencia") else 0
+        out.append(float(np.exp(lm + np.log(g) * max(h, 0)))); W.append(w)
+    return np.array(out), W
+
+
+def tendencia(idx, corte):
+    g = float((idx.iloc[-1] / idx.iloc[-5]) ** 0.5) if len(idx) >= 5 else 1.0     # crescimento anual, últimos 2 anos
+    ultimo = idx.index[-1]                                                           # ex.: '2026S2'
+    ref = pd.Timestamp(f"{ultimo[:4]}-{'04' if ultimo.endswith('S1') else '10'}-01")  # meio do semestre
+    return g, min(ref, pd.Timestamp(corte))
+
+
+def teste(itbi, pesos_json, corte="2025-10-01", fim="2026-10-01"):
+    cfg = json.load(open(pesos_json))
     a = vendas(itbi)
-    tr, te = a[a.data < corte], a[a.data >= corte]
+    tr, te = a[a.data < corte], a[(a.data >= corte) & (a.data < fim)]
     p, idx = componentes(tr)
+    g, ref = tendencia(idx, tr.data.max())
     x = te.merge(p, left_on="b", right_index=True, how="inner")
-    y = np.log(x.m2.values)
-
-    def erro(est, msk=None):
-        e = np.exp(y - np.log(est)) - 1
-        if msk is not None:
-            e = e[msk]
-        e = e[~np.isnan(e)]
-        return np.median(np.abs(e)), np.mean(np.abs(e) <= .1), np.mean(np.abs(e) <= .2), len(e)
-
-    fmt = lambda r: f"erro mediano {r[0]:.1%} | ±10%: {r[1]:.0%} | ±20%: {r[2]:.0%} | n={r[3]}"
-    print(f"Teste: vendas de {corte} em diante, previstas só com dados anteriores")
-    print("  seus pesos        :", fmt(erro(combinar(x, pesos))), "|", pesos)
-    for c in COMP:
-        print(f"  só {c:13s}  :", fmt(erro(x[f'm2_{c}'].values)))
-    # melhores pesos (grade de 10 em 10%)
-    melhor = None
-    for comb in itertools.product(range(11), repeat=len(COMP)):
-        if sum(comb) != 10:
-            continue
-        pw = {c: v / 10 for c, v in zip(COMP, comb)}
-        r = erro(combinar(x, pw))
-        if melhor is None or r[0] < melhor[0][0]:
-            melhor = (r, pw)
-    print("  melhores pesos    :", fmt(melhor[0]), "|", melhor[1])
-    tem = x.n_predio > 0
-    for nome, pw in [("seus pesos", pesos), ("melhores", melhor[1])]:
-        est = combinar(x, pw)
-        print(f"  {nome:10s} prédio com 1-2 vendas:", fmt(erro(est, (x.n_predio <= 2).values)),
-              "| 10+ vendas:", fmt(erro(est, (x.n_predio >= 10).values)))
-    # cobertura: % de vendas cujo prédio não tem nenhum componente
-    print("  componentes disponíveis (% das vendas):", {c: f"{x[f'm2_{c}'].notna().mean():.0%}" for c in COMP})
+    est, _ = estimar(x, cfg, x.data.values, ref, g)
+    e = x.m2.values / est - 1
+    print(f"Teste {corte} a {fim}: erro mediano {np.median(np.abs(e)):.2%} | ±10% {np.mean(np.abs(e) <= .1):.0%} | "
+          f"±20% {np.mean(np.abs(e) <= .2):.0%} | viés {np.median(e):+.1%} | n={len(e)} | tendência anual {g - 1:+.1%}")
 
 
 def gerar(itbi, pesos_json, saida):
     a = vendas(itbi)
     p, idx = componentes(a)
-    p.attrs["indice_ref"] = idx.index[-1]
+    g, ref = tendencia(idx, a.data.max())
+    p.attrs.update({"indice_ref": idx.index[-1], "tendencia_anual": g, "ref": str(ref.date())})
     p.to_pickle(saida)
     print(f"Componentes de {len(p)} prédios (referência {idx.index[-1]})")
 

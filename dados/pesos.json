@@ -1,12 +1,11 @@
 {
- "observacao": "Pesos por quantidade de vendas do prédio. Calibrados com as vendas de out/2025 a set/2026 previstas só com dados anteriores (pipeline/ponderado.py teste). Se um componente faltar, o peso dele vai para a reserva e depois é dividido entre os disponíveis.",
- "faixas": [
-  {"vendas_min": 0,  "vendas_max": 0,    "pesos": {"predio": 0.0, "ano": 1.0, "rua": 0.0, "bairro": 0.0}},
-  {"vendas_min": 1,  "vendas_max": 2,    "pesos": {"predio": 0.7, "ano": 0.3, "rua": 0.0, "bairro": 0.0}},
-  {"vendas_min": 3,  "vendas_max": 9,    "pesos": {"predio": 0.8, "ano": 0.2, "rua": 0.0, "bairro": 0.0}},
-  {"vendas_min": 10, "vendas_max": 99999, "pesos": {"predio": 1.0, "ano": 0.0, "rua": 0.0, "bairro": 0.0}}
+ "observacao": "Modelo ponderado. Peso das vendas do próprio prédio = neff/(neff+k), onde neff soma as vendas do prédio desde 2012 com peso 0,5^(idade em anos / meia_vida). O restante do peso é dividido entre prédios da mesma época no bairro, rua e bairro (se faltar 'ano', a parte dele vai metade para rua e metade para bairro). Os valores são projetados até a data da avaliação pela tendência do índice de preços dos últimos 2 anos. Calibrado com vendas de out/2024 a set/2025 e validado em out/2025 a set/2026 (erro mediano 9,3%; pipeline/ponderado.py teste).",
+ "formula": {"k": 0.25, "meia_vida_anos": 3, "resto": {"ano": 0.8, "rua": 0.1, "bairro": 0.1}, "tendencia": true},
+ "faixas_confianca": [
+  {"peso_predio_min": 0.9, "rotulo": "alta",  "p20": 0.900, "p80": 1.120},
+  {"peso_predio_min": 0.7, "rotulo": "boa",   "p20": 0.878, "p80": 1.155},
+  {"peso_predio_min": 0.0, "rotulo": "media", "p20": 0.862, "p80": 1.176}
  ],
- "reserva": {"rua": 0.5, "bairro": 0.5},
  "conservacao": [
   {"id": "reformar", "rotulo": "Precisa de reforma", "ajuste": -0.10},
   {"id": "original", "rotulo": "Original, bem conservado", "ajuste": 0.0},
