@@ -89,6 +89,13 @@ h3.sec{font-size:20px;font-weight:500;margin:28px 0 8px}
 .duo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 28px}@media(max-width:760px){.duo{grid-template-columns:minmax(0,1fr)}}
 b.up{color:light-dark(#15803d,#4ade80)}b.dn{color:var(--warn)}
 a.go,a.gob{color:inherit;font-weight:500;text-decoration:underline;text-decoration-color:var(--ln);text-underline-offset:3px}
+.av .form{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px 14px}
+.av .form label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--mut)}
+.av .form input,.av .form select{font:inherit;font-size:16px;min-height:44px;padding:6px 10px;border:2px solid var(--ln);background:var(--bg);color:var(--ink);border-radius:0;margin:0;width:100%}
+.av .form input:focus,.av .form select:focus{outline:3px solid var(--hi);border-color:var(--ink)}
+.av tr.muted td{color:var(--mut)}.av .pf{margin-top:12px}
+.ads{font-size:14px;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:10px 0 0}.ads span{color:var(--mut)}
+.ads a{color:var(--ink);font-weight:500;text-decoration:underline;text-decoration-color:var(--ln);text-underline-offset:3px;min-height:32px;display:inline-flex;align-items:center}
 .foot{background:var(--pl2);font-size:14px;color:var(--mut)}
 .foot p{max-width:80ch;margin:0 0 8px}
 @media(max-width:600px){table{font-size:13px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px;border-bottom:1px solid var(--ln)}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:8em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:7.5em;margin-inline-start:-8em;white-space:normal;color:var(--mut)}.stack td:empty{display:none}.fig{height:240px}}
@@ -194,23 +201,54 @@ function street(miss){const{lg,rows}=cur;const g=new Map();
   out.querySelectorAll('tr.click').forEach(tr=>tr.onclick=()=>{const k=tr.dataset.k;q.value=lg+(k==='s/n'?'':' '+k);building(k==='s/n'?'':k)})}
 
 const CONF={'10+':'confiança alta','3-9':'confiança boa','1-2':'confiança média','0':'confiança baixa'};
-function estimate(P){if(!P)return'';
-  const pl=(n,a,b)=>n+' '+(n===1?a:b);
-  const prof=[pl(P.ap,'apartamento','apartamentos'),pl(new Set(P.tipos.map(t=>Math.round(t[0]*(P.fu||FU0)))).size,'tamanho','tamanhos'),
-    P.vg?pl(P.vg,'vaga com matrícula própria','vagas com matrícula própria'):'garagem sem matrícula própria',
-    P.lj?pl(P.lj,'loja/sala','lojas/salas'):'',P.ca?pl(P.ca,'casa','casas'):'','padrão '+P.pad,P.ano?'construído em '+P.ano:'',P.tip?P.tip.toLowerCase():''].filter(Boolean).join(' · ');
-  const fx=P.fu||FU0,tm=new Map();for(const[a,n]of P.tipos){const k=Math.round(a*fx);const o=tm.get(k)||[0,0];o[0]+=a*n;o[1]+=n;tm.set(k,o)}
-  const tipos=[...tm.values()].map(([s,n])=>[s/n,n]).sort((a,b)=>a[0]-b[0]);
-  const fu=P.fu||null,mu=fu?P.m2/fu:P.m2;
-  return `<div class="est"><div class="em"><span>Valor estimado hoje, por m² ${fu?'de área útil (aprox.)':'de área PBH'}</span><b>${brl(mu)}</b>
-  <p>Faixa provável: ${brl(mu*P.lo)} a ${brl(mu*P.hi)} por m²</p><span class="conf">${CONF[P.conf]}</span>
-  ${fu?`<p class="note" style="margin-top:8px">Área útil = área PBH × ${String(fu).replace('.',',')} (${P.fuc?'fator conferido neste prédio: '+esc(P.fuf):'fator provisório, '+esc(P.fuf)+'; varia de prédio para prédio'}).</p>`:''}
-  <p class="note" style="margin-top:8px">${P.n?`Baseado em ${pl(P.n,'venda','vendas')} deste prédio desde 2012, corrigidas para hoje, combinadas com os prédios vizinhos.`:'Nenhuma venda deste prédio desde 2012: estimado só pelos prédios vizinhos.'}</p>
-  ${P.n===0&&!P.ano?'<p class="warn">Se o prédio for novo, o valor real tende a ser bem maior que esta estimativa.</p>':''}</div>
-  <div><h3>Perfil do prédio (cadastro PBH, __CADASTRO__)</h3><p class="pf">${esc(prof)}</p>
-  ${tipos.length?`<div class="scroll"><table class="stack"><thead><tr><th class="n">Área útil ≈</th><th class="n">Unidades</th><th class="n">Valor estimado</th><th class="n">Faixa provável</th></tr></thead><tbody>
-  ${tipos.map(([a,n])=>`<tr><td class="n"><b>${Math.round(a*(fu||FU0))} m²</b></td><td class="n">${n}</td><td class="n"><b>${brl(a*P.m2)}</b></td><td class="n">${brl(a*P.m2*P.lo)} – ${brl(a*P.m2*P.hi)}</td></tr>`).join('')}</tbody></table></div>`:''}
-  <p class="note">${P.vg?'As vagas têm matrícula própria: quando vendidas junto, o valor delas entrou no cálculo.':'A garagem já está embutida na área PBH dos apartamentos.'} A faixa é onde caíram 60% das vendas reais nos testes (do 20º ao 80º percentil).</p><p class="note">Área útil ≈ área registrada na PBH (que inclui a parte de hall, lazer e garagem) × fator do prédio. O valor estimado não depende do fator: é o preço da unidade inteira.</p></div></div>`}
+const PESOS=__PESOS__;
+const COMPN={predio:'Vendas neste prédio',ano:'Prédios da mesma época no bairro (±5 anos)',rua:'Outros prédios da rua',bairro:'Prédios do bairro'};
+const COMPB={predio:n=>`${n} ${n===1?'venda':'vendas'} desde 2012`,ano:n=>`${n} prédios`,rua:n=>`${n} prédios`,bairro:n=>`${n} prédios`};
+let AV={k:'',apt:'',tam:null,cons:'original',au:''};
+const slug=s=>(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+function linksAnuncios(P,lg){const b=slug(P.bai),r=slug(P.reg);if(!b)return'';
+  const L=[[`https://www.quintoandar.com.br/comprar/imovel/${b}-belo-horizonte-mg-brasil/apartamento`,'QuintoAndar'],
+    r?[`https://www.netimoveis.com/venda/minas-gerais/belo-horizonte/${r}/${b}/apartamento?localizacao=BR-MG-belo-horizonte-${b}-${r}-`,'Netimóveis']:null,
+    [`https://www.olx.com.br/estado-mg?q=${encodeURIComponent('apartamento venda '+titleCase(P.bai)+' belo horizonte')}`,'OLX']].filter(Boolean);
+  return `<p class="ads"><span>Anúncios à venda em ${esc(titleCase(P.bai))}:</span> ${L.map(([u,n])=>`<a href="${u}" target="_blank" rel="noopener">${n} ↗</a>`).join('')}</p>`}
+function estimate(P,rows){if(!P)return'';
+  const k=cur.lg+'|'+P.__num;if(AV.k!==k)AV={k,apt:'',tam:null,cons:'original',au:''};
+  const fu=P.fu||FU0,pl=(n,a,b)=>n+' '+(n===1?a:b);
+  const tm=new Map();for(const[a,n]of P.tipos){const kk=Math.round(a*fu);const o=tm.get(kk)||[0,0];o[0]+=a*n;o[1]+=n;tm.set(kk,o)}
+  const tipos=[...tm.values()].map(([s,n])=>[s/n,n]).sort((a,b)=>b[1]-a[1]||a[0]-b[0]);
+  // unidade: pelo número do apto (vendas anteriores) ou pelo tamanho
+  let aPBH=null,origem='';
+  if(AV.apt){const q=norm(AV.apt).replace(/\D/g,'');const r=rows.find(r=>r.tp==='AP'&&r.ac&&norm(r.comp).replace(/\D/g,'').startsWith(q)&&q.length>=2&&new RegExp('\\b'+q+'\\b').test(norm(r.comp)));
+    if(r){aPBH=r.ac;origem=`área do apto ${esc(AV.apt)} registrada na PBH`}}
+  if(aPBH==null&&tipos.length){const t=tipos[AV.tam??0]||tipos[0];aPBH=t[0];origem=AV.apt?`apto ${esc(AV.apt)} não encontrado nas vendas; usando o tamanho escolhido`:''}
+  const cons=PESOS.conservacao.find(c=>c.id===AV.cons)||PESOS.conservacao[1];
+  const m2=P.m2*(1+cons.ajuste),val=aPBH?m2*aPBH:null;
+  const auEst=aPBH?aPBH*fu:null,au=+AV.au>0?+AV.au:auEst;
+  const comp=P.c?Object.keys(COMPN).map(c=>{const[v,n]=P.c[c]||[];const w=P.w?.[c]||0;return`<tr class="${w?'':'muted'}"><td>${COMPN[c]}<br><span class="note">${v?COMPB[c](n):'sem dados suficientes'}</span></td><td class="n">${v?brl(v/fu):'—'}</td><td class="n"><b>${Math.round(w*100)}%</b></td></tr>`}).join(''):'';
+  return `<div class="est av"><div class="em">
+   <span>Quanto vale ${aPBH?'este apartamento':'um apartamento aqui'} hoje</span><b>${val?brl(val):brl(m2/fu)+'/m²'}</b>
+   ${val?`<p>Faixa provável: ${brl(val*P.lo)} a ${brl(val*P.hi)}</p><p>${brl(val/au)} por m² útil · ${Math.round(au)} m² úteis${+AV.au>0?' (informado)':' (estimado)'}</p>`:''}
+   <span class="conf">${CONF[P.conf]}</span>${cons.ajuste?` <span class="conf">${cons.ajuste>0?'+':''}${Math.round(cons.ajuste*100)}% conservação</span>`:''}
+   ${origem?`<p class="note" style="margin-top:8px">${origem}.</p>`:''}
+   ${P.n===0&&!P.ano?'<p class="warn">Sem vendas deste prédio desde 2012: estimado só pelos vizinhos. Se o prédio for novo, o valor real tende a ser maior.</p>':''}
+  </div><div>
+   <h3>Seu apartamento</h3>
+   <div class="form">
+    <label>Número do apto <input type="text" id="avApt" inputmode="numeric" placeholder="ex.: 702" value="${esc(AV.apt)}"></label>
+    ${tipos.length>1?`<label>ou tamanho <select id="avTam">${tipos.map(([a,n],i)=>`<option value="${i}"${i===(AV.tam??0)?' selected':''}>${Math.round(a*fu)} m² úteis ≈ (${pl(n,'unidade','unidades')})</option>`).join('')}</select></label>`:''}
+    <label>Estado de conservação <select id="avCons">${PESOS.conservacao.map(c=>`<option value="${c.id}"${c.id===AV.cons?' selected':''}>${esc(c.rotulo)}${c.ajuste?` (${c.ajuste>0?'+':''}${Math.round(c.ajuste*100)}%)`:''}</option>`).join('')}</select></label>
+    <label>Área útil real em m², se souber <input type="number" id="avAu" min="15" max="2000" placeholder="${auEst?Math.round(auEst):''}" value="${esc(AV.au)}"></label>
+   </div>
+   ${comp?`<h3 style="margin-top:14px">Como chegamos nesse valor</h3><div class="scroll"><table class="stack"><thead><tr><th>Componente</th><th class="n">R$/m² útil</th><th class="n">Peso</th></tr></thead><tbody>${comp}</tbody></table></div>
+   <p class="note">Valores de hoje (vendas corrigidas pelo índice de preços). Os pesos mudam conforme o número de vendas do prédio: quanto mais vendas, mais o próprio prédio conta. Foram calibrados com as vendas de out/2025 a set/2026: erro mediano de 9,9% em prédios com vendas anteriores.</p>`:`<p class="note">Prédio sem vendas registradas desde 2012: estimativa pelos 8 prédios vizinhos, ajustada por padrão de acabamento.</p>`}
+   <p class="pf">${esc([pl(P.ap,'apartamento','apartamentos'),P.vg?pl(P.vg,'vaga com matrícula própria','vagas com matrícula própria'):'garagem sem matrícula própria',P.lj?pl(P.lj,'loja/sala','lojas/salas'):'',P.ano?'construído em '+P.ano:''].filter(Boolean).join(' · '))}</p>
+   ${linksAnuncios(P,cur.lg)}
+  </div></div>`}
+function ligarAvalie(num){const re=()=>building(num);
+  const a=$('#avApt');if(a)a.onchange=()=>{AV.apt=a.value.trim();re()};
+  const t=$('#avTam');if(t)t.onchange=()=>{AV.tam=+t.value;AV.apt='';re()};
+  const c=$('#avCons');if(c)c.onchange=()=>{AV.cons=c.value;re()};
+  const u=$('#avAu');if(u)u.onchange=()=>{AV.au=u.value;re()}}
 function building(num){const{lg}=cur;const P=cur.pm.get(lg+'|'+num);const fu=P?.fu||FU0;
   const all=cur.rows.filter(r=>r.num===num).map(r=>{const au=r.tp==='AP'?(r.ac?r.ac*fu:null):r.tp==='LV'?r.at:r.ac;return{...r,au,mu:r.vd&&au>0?r.vd/au:null}});
   let rows=all.filter(r=>(!resOnly||r.oc==='R')&&(!unitF||norm(r.comp).includes(norm(unitF))));
@@ -224,7 +262,7 @@ function building(num){const{lg}=cur;const P=cur.pm.get(lg+'|'+num);const fu=P?.
   const fuTxt=P?.fuc?'fator conferido neste prédio':'fator provisório '+String(fu).replace('.',',');
   out.innerHTML=`<div class="res"><div class="head"><div><h2>${esc(lg)}, ${esc(num||'s/n')}</h2><p>${esc(all[0]?.bai||P?.bai||'')}${anos.length?' · construído em '+esc(anos.join(', ')):''}</p></div>
   <button class="g" id="back">← Todos os números da rua</button></div>
-  ${estimate(P)}
+  ${P?estimate({...P,__num:num},all):''}
   <div class="kpis"><div class="kpi${P?'':' on'}"><span>R$/m² útil mediano, últimos 24 meses</span><b>${m2r?brl(m2r):'—'}</b><em>${rec2.length} ${rec2.length===1?'venda residencial':'vendas residenciais'}</em></div>
   <div class="kpi"><span>R$/m² útil mediano, desde 2008</span><b>${m2a?brl(m2a):'—'}</b><em>${res.length} vendas, sem correção${nx?` · ${nx} fora (declarado muito abaixo da avaliação da PBH)`:''}</em></div>
   <div class="kpi"><span>Negócios registrados</span><b>${all.length}</b><em>${dt(all.reduce((a,r)=>!a||r.d<a?r.d:a,''))} a ${dt(all.reduce((a,r)=>r.d>a?r.d:a,''))}</em></div>
@@ -241,6 +279,7 @@ function building(num){const{lg}=cur;const P=cur.pm.get(lg+'|'+num);const fu=P?.
   <div class="scroll"><table class="stack" id="tb"><thead><tr><th data-s="d">Data</th><th data-s="comp">Unidade</th><th data-s="tp">Tipo</th><th data-s="au" class="n">Área útil ≈</th><th data-s="vd" class="n">Valor declarado</th><th data-s="mu" class="n">R$/m² útil ≈</th></tr></thead><tbody>
   ${rows.map(r=>`<tr><td class="n">${dt(r.d)}</td><td>${esc(r.comp)||'—'}${r.vagas?`<br><span class="note">+ ${esc(r.vagas.join(', '))}</span>`:''}</td><td><span class="tag">${esc(TIPO[r.tp]||r.tp)}</span></td><td class="n">${r.au?Math.round(r.au)+' m²':'—'}</td><td class="n">${brl(r.vd)}${r.div!=null&&r.div>=.2?`<br><span class="flag">PBH avaliou ${Math.round(r.div*100)}% acima</span>`:''}</td><td class="n">${r.mu?brl(r.mu):'—'}</td></tr>`).join('')||'<tr><td colspan="6">Nenhuma transação com esses filtros.</td></tr>'}
   </tbody></table></div><p class="note">${rows.length} de ${all.length} negócios exibidos. Área útil ≈ área registrada na PBH × ${String(fu).replace('.',',')} (${esc(fuTxt)}); para casas e lotes, a área registrada. Vagas avulsas pagas no mesmo dia de um apartamento foram somadas a ele. Quando a PBH avaliou o imóvel 20% ou mais acima do valor declarado, a venda aparece sinalizada e fica fora das medianas. Clique nos títulos das colunas para ordenar.</p></div>`;
+  ligarAvalie(num);
   out.querySelectorAll('th[data-s]').forEach(th=>{if(th.dataset.s===sortK)th.classList.add(sortDir>0?'asc':'desc');th.onclick=()=>{sortDir=sortK===th.dataset.s?-sortDir:-1;sortK=th.dataset.s;building(num)}});
   $('#back').onclick=()=>{q.value=lg;street()};
   $('#ro').onchange=ev=>{resOnly=ev.target.checked;building(num)};

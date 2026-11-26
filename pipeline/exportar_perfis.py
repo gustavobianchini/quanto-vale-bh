@@ -5,15 +5,37 @@ import json, sys, zlib
 import numpy as np, pandas as pd
 
 # faixa P20–P80 de (venda real ÷ estimativa) na validação fora da amostra (vendas de out/2025 a set/2026)
-BANDA = {"0": (0.91, 1.68), "1-2": (0.85, 1.19), "3-9": (0.89, 1.15), "10+": (0.93, 1.19)}
+# prédios sem venda: estimativa pelos vizinhos (modelo v1); com venda: modelo ponderado (pipeline/ponderado.py),
+# faixa P20–P80 relativa à mediana na validação de out/2025–set/2026 (BH inteira)
+BANDA = {"0": (0.91, 1.68), "1-2": (0.87, 1.16), "3-9": (0.88, 1.15), "10+": (0.90, 1.12)}
+COMP = ["predio", "ano", "rua", "bairro"]
+
+
+def ponderar(row, cfg):
+    n = int(row["n_predio"])
+    w = dict(next(f["pesos"] for f in cfg["faixas"] if f["vendas_min"] <= n <= f["vendas_max"]))
+    disp = {c: row[f"m2_{c}"] == row[f"m2_{c}"] for c in COMP}
+    falta = sum(w[c] for c in ("predio", "ano") if not disp[c])
+    for c in ("predio", "ano"):
+        if not disp[c]:
+            w[c] = 0
+    for c, v in cfg["reserva"].items():
+        w[c] += falta * v
+    tot = sum(w[c] for c in COMP if disp[c])
+    if not tot:
+        return None, {}
+    m2 = float(np.exp(sum(w[c] * np.log(row[f"m2_{c}"]) for c in COMP if disp[c]) / tot))
+    return m2, {c: round(w[c] / tot, 3) if disp[c] else 0 for c in COMP}
 
 
 def bk(n):
     return "0" if n == 0 else "1-2" if n <= 2 else "3-9" if n <= 9 else "10+"
 
 
-def main(src, outdir, N, calib=None):
+def main(src, outdir, N, calib=None, comps=None, pesos=None):
     p = pd.read_pickle(src); N = int(N)
+    C = pd.read_pickle(comps) if comps else None
+    cfg = json.load(open(pesos)) if pesos else None
     cal = {}
     if calib:
         c = pd.read_csv(calib)
@@ -24,12 +46,24 @@ def main(src, outdir, N, calib=None):
         f_glob, n_cal = None, 0
     sh = {s: [] for s in range(N)}
     for r in p.itertuples():
-        lo, hi = BANDA[bk(r.n)]
+        b = f"{r.lg}|{r.num}"
+        cr = C.loc[b] if C is not None and b in C.index else None
+        n = int(cr["n_predio"]) if cr is not None else 0
+        lo, hi = BANDA[bk(n)]
         rec = {"ap": int(r.n_ap), "vg": int(r.n_vaga), "vr": int(r.n_vr), "lj": int(r.n_loja), "ca": int(r.n_ca),
                "pad": r.padrao, "tip": r.tipologia, "lat": round(r.lat, 6), "lon": round(r.lon, 6),
-               "tipos": r.tipos, "ano": None if pd.isna(r.ano) else int(r.ano), "n": int(r.n),
+               "tipos": r.tipos, "ano": None if pd.isna(r.ano) else int(r.ano), "n": n, "reg": getattr(r, "regional", ""),
                "m2": round(float(r.m2est)), "m2viz": round(float(r.m2viz)), "m2b": None if pd.isna(r.m2b) else round(float(r.m2b)),
-               "bai": None if pd.isna(r.bairro) else r.bairro, "lo": lo, "hi": hi, "conf": bk(r.n)}
+               "bai": None if pd.isna(r.bairro) else r.bairro, "lo": lo, "hi": hi, "conf": bk(n)}
+        if cr is not None and cfg:
+            m2, w = ponderar(cr, cfg)
+            if m2:
+                rec["m2"] = round(m2); rec["w"] = w
+                rec["c"] = {c: [None if pd.isna(cr[f"m2_{c}"]) else round(float(cr[f"m2_{c}"])),
+                                int(cr[{"predio": "n_predio", "ano": "np_ano", "rua": "np_rua", "bairro": "np_bairro"}[c]])] for c in COMP}
+                rec["bai"] = cr["bairro"]
+                if not pd.isna(cr["anoc"]):
+                    rec["ano"] = int(cr["anoc"])
         if (r.lg, r.num) in cal:
             rec["fu"], rec["fuf"] = cal[(r.lg, r.num)]; rec["fuc"] = 1
         elif f_glob:

@@ -1,0 +1,16 @@
+{
+ "observacao": "Pesos por quantidade de vendas do prédio. Calibrados com as vendas de out/2025 a set/2026 previstas só com dados anteriores (pipeline/ponderado.py teste). Se um componente faltar, o peso dele vai para a reserva e depois é dividido entre os disponíveis.",
+ "faixas": [
+  {"vendas_min": 0,  "vendas_max": 0,    "pesos": {"predio": 0.0, "ano": 1.0, "rua": 0.0, "bairro": 0.0}},
+  {"vendas_min": 1,  "vendas_max": 2,    "pesos": {"predio": 0.7, "ano": 0.3, "rua": 0.0, "bairro": 0.0}},
+  {"vendas_min": 3,  "vendas_max": 9,    "pesos": {"predio": 0.8, "ano": 0.2, "rua": 0.0, "bairro": 0.0}},
+  {"vendas_min": 10, "vendas_max": 99999, "pesos": {"predio": 1.0, "ano": 0.0, "rua": 0.0, "bairro": 0.0}}
+ ],
+ "reserva": {"rua": 0.5, "bairro": 0.5},
+ "conservacao": [
+  {"id": "reformar", "rotulo": "Precisa de reforma", "ajuste": -0.10},
+  {"id": "original", "rotulo": "Original, bem conservado", "ajuste": 0.0},
+  {"id": "parcial", "rotulo": "Reformado em parte", "ajuste": 0.05},
+  {"id": "completa", "rotulo": "Reforma completa recente (até 5 anos)", "ajuste": 0.10}
+ ]
+}
