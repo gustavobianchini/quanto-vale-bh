@@ -7,7 +7,7 @@ on:
   workflow_dispatch: {}
   push:
     branches: [main]
-    paths: ["pipeline/**", "site/**", "dados/calibracao.csv", "dados/manual/**", ".github/workflows/atualizar.yml"]
+    paths: ["pipeline/**", "site/**", "dados/calibracao.csv", "dados/pesos.json", "dados/manual/**", ".github/workflows/atualizar.yml"]
 
 permissions:
   contents: write
