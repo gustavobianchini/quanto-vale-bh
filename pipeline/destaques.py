@@ -3,7 +3,8 @@
 - venda residencial mais cara e maior R$/m² útil do mês
 - prédio e bairro mais negociados
 - revendas da mesma unidade que mais valorizaram e desvalorizaram (ganho real, descontado o IPCA)
-- bairros que mais subiram/caíram: R$/m² útil dos últimos 12 meses contra os 12 anteriores (mediana entre prédios)
+- bairros que mais subiram/caíram: R$/m² útil dos últimos 12 meses contra os 12 anteriores, nos mesmos prédios
+  (a mediana entre prédios também é guardada, para mostrar quando ela engana)
 
 Uso: python pipeline/destaques.py itbi_bh.csv calibracao.csv econ.json saida.json
 """
@@ -57,7 +58,8 @@ def main(itbi, calib, econ, saida):
         return fator_ipca[b] / fator_ipca[a]
 
     ok = r[~r.suspeita & r.valor_declarado.notna() & (r.valor_declarado >= 30000)]
-    aps = ok[(ok.tipo == "AP") & (ok.area_construida >= 20)]
+    aps = ok[(ok.tipo == "AP") & (ok.area_construida >= 20)].copy()
+    aps["novo"] = (aps.data.str[:4].astype(int) - pd.to_numeric(aps.ano_construcao, errors="coerce")).between(-10, 2)
 
     # revendas: mesma unidade (rua, número, complemento, mesma área) vendida antes
     u = aps[aps.complemento != ""].sort_values("data")
@@ -103,20 +105,16 @@ def main(itbi, calib, econ, saida):
         blocos["desvalorizaram"] = [revenda(x) for x in rm.sort_values("real_aa").head(5).itertuples()]
         # bairros: 12 meses até m contra os 12 anteriores
         fim = pd.Period(m, "M"); j1 = [str(fim - k) for k in range(12)]; j0 = [str(fim - 12 - k) for k in range(12)]
-        def med(meses_):
-            z = aps[aps.mes.isin(meses_)]
-            pb = z.groupby(["bairro", "logradouro", "num"]).mu.median().reset_index()
-            return pb.groupby("bairro").mu.agg(["median", "size"])
-        a1, a0 = med(j1), med(j0)
-        bz = a1.join(a0, lsuffix="1", rsuffix="0").dropna()
-        bz = bz[(bz.size1 >= 15) & (bz.size0 >= 15)]
-        bz["var"] = bz.median1 / bz.median0 - 1
+        from mercado import var_mesmos   # import local: mercado.py importa preparar() deste arquivo
+        bz = var_mesmos(aps, j1, j0)
+        bz = bz[(bz.n1 >= 15) & (bz.n0 >= 15)]
         ip = ipca(j0[0], j1[0]) - 1
-        lst = lambda s: [{"bai": b, "var": round(float(x["var"]), 4), "m2": round(float(x.median1)), "m2_ant": round(float(x.median0)),
-                          "predios": int(x.size1)} for b, x in s.iterrows()]
+        lst = lambda s: [{"bai": b, "var": round(float(x.mesmos), 4), "var_med": round(float(x.aparente), 4), "m2": round(float(x.m2)),
+                          "m2_ant": round(float(x.m2_ant)), "predios": int(x.n_mesmos)} for b, x in s.iterrows()]
+        bz = bz.sort_values("mesmos")
         blocos["bairros_ipca"] = round(float(ip), 4)
-        blocos["bairros_subiram"] = lst(bz.sort_values("var", ascending=False).head(5))
-        blocos["bairros_cairam"] = lst(bz.sort_values("var").head(5))
+        blocos["bairros_subiram"] = lst(bz.iloc[::-1].head(5))
+        blocos["bairros_cairam"] = lst(bz.head(5))
         out["meses"].append(blocos)
     with open(saida, "w") as f:
         json.dump(out, f, ensure_ascii=False, separators=(",", ":"))

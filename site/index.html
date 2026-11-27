@@ -101,13 +101,36 @@ a.go,a.gob{color:inherit;font-weight:500;text-decoration:underline;text-decorati
 .foot p{max-width:80ch;margin:0 0 8px}
 @media(max-width:600px){table{font-size:13px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px;border-bottom:1px solid var(--ln)}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:8em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:7.5em;margin-inline-start:-8em;white-space:normal;color:var(--mut)}.stack td:empty{display:none}.fig{height:240px}}
 @media(prefers-reduced-motion:no-preference){.res{animation:in .25s ease-out}@keyframes in{from{opacity:0;transform:translateY(6px)}}}
+
+:root{--s-novo:light-dark(#257de0,#338ced);--s-usado:light-dark(#f47230,#e76624);--s-apr:light-dark(#6a4ce2,#9887ef);--s-ini:light-dark(#00b894,#00a888);--s-ent:light-dark(#f2a600,#d28e05);
+  --frio:light-dark(#257de0,#338ced);--frio2:light-dark(#9dc8f7,#1b64be);--morno:light-dark(#d4d4cf,#4a4a46);--quente2:light-dark(#f6a98a,#a4432a);--quente:light-dark(#dc3c3d,#eb6263)}
+.term{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:clamp(20px,3vw,40px);margin:4px 0 34px}
+.gbox{border:2px solid var(--ink);padding:18px clamp(14px,2.5vw,26px)}
+.gauge{display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap;margin-bottom:10px}.gauge svg{width:min(320px,100%);height:auto}
+.glab span{display:block;color:var(--mut)}.glab b{display:inline-block;font-size:clamp(30px,4vw,42px);font-weight:500;line-height:1.1;background:var(--hi);color:#111;padding:0 8px;margin-left:-8px}
+.sinais{list-style:none;margin:0 0 6px;padding:0}.sinais li{border-top:1px solid var(--ln);padding:10px 0}
+.sn{display:grid;grid-template-columns:1fr 120px 76px;gap:12px;align-items:center;font-weight:500}.sn em{font-style:normal;font-size:13px;color:var(--mut);text-align:right}
+.nb{position:relative;height:10px;background:var(--pl2);border:1px solid var(--ln)}.nb::after{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--ink)}.nb i{position:absolute;top:0;bottom:0}
+.sinais p{margin:4px 0 0;font-size:14px;color:var(--mut)}.sinais p b{color:var(--ink);font-weight:500}
+.news{border-top:2px solid var(--ink);padding-top:4px}.news h3{margin:10px 0 6px}.news ul{list-style:none;margin:0;padding:0}
+.news li{padding:10px 0;border-bottom:1px solid var(--ln)}.news a{color:var(--ink);text-decoration:none;font-weight:500;display:block;line-height:1.35}.news a:hover{text-decoration:underline}
+.news li span{display:block;font-size:13px;color:var(--mut);margin-top:3px}.tg{font-weight:500;font-size:12px;background:var(--hi);color:#111;padding:0 5px;margin-left:4px}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:30px clamp(20px,3vw,40px);margin-bottom:30px}
+.res section h3,.g2 h3{margin:0 0 10px}.res>section{margin-bottom:30px}
+.fig.mk{height:260px;border-width:1px;border-color:var(--ln)}
+.tip{position:absolute;z-index:3;pointer-events:none;background:var(--bg);border:2px solid var(--ink);padding:6px 10px;font-size:13px;line-height:1.4;white-space:nowrap}
+.legs{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13px;color:var(--mut);margin:0 0 6px}.legs i{display:inline-block;width:12px;height:12px;border-radius:2px;background:var(--c);vertical-align:-1px;margin-right:6px}
+.legs b.l{display:inline-block;width:18px;border-top:3px solid var(--c);vertical-align:4px;margin-right:6px}.legs b.l.d{border-top-style:dashed}
+details.nums{margin:4px 0 0;font-size:14px}details.nums summary{cursor:pointer;color:var(--mut)}details.nums table{margin-top:6px}
+@media(max-width:900px){.term,.g2{grid-template-columns:1fr}}
+@media(max-width:600px){.tabs{display:grid;grid-template-columns:1fr 1fr;width:100%}.tabs button{padding:8px 10px}.sn{grid-template-columns:1fr 90px;}.sn em{display:none}.fig.mk{height:220px}}
 </style>
 <script>new MutationObserver(()=>{for(const c of document.querySelectorAll('.stack td:not([data-l])')){let i=0,p=c;while(p=p.previousElementSibling)i+=p.colSpan;c.dataset.l=c.closest('table').rows[0].cells[i]?.textContent||''}}).observe(document,{childList:true,subtree:true})</script>
 </head>
 <body>
 <section class="band top"><div class="wrap">
   <h1>Negócios registrados no ITBI de Belo Horizonte</h1>
-  <nav class="tabs" aria-label="Seções"><button type="button" id="tA" class="on" aria-pressed="true">Buscar endereço</button><button type="button" id="tB" aria-pressed="false">Ranking de bairros</button><button type="button" id="tC" aria-pressed="false">Destaques do mês</button></nav>
+  <nav class="tabs" aria-label="Seções"><button type="button" id="tA" class="on" aria-pressed="true">Buscar endereço</button><button type="button" id="tB" aria-pressed="false">Ranking de bairros</button><button type="button" id="tC" aria-pressed="false">Destaques do mês</button><button type="button" id="tD" aria-pressed="false">Termômetro do mercado</button></nav>
   <p class="sub" id="sub">Todas as transmissões de imóveis quitadas na Prefeitura desde 2008, por endereço. Digite a rua e o número: “Rua Chile 197”.</p>
   <form class="sbox" id="f" autocomplete="off">
     <input id="q" type="search" placeholder="Rua, avenida… e número" aria-label="Endereço" aria-autocomplete="list" aria-controls="sug">
@@ -448,6 +471,146 @@ async function bairro(b){out.innerHTML='<p class="st">Carregando bairro…</p>';
   out.querySelectorAll('tr.click').forEach(tr=>tr.onclick=()=>{tab('a');q.value=tr.dataset.q;$('#f').requestSubmit()});
   if(S.length>1){const draw=()=>chart([],{yrs:S,leg:'prédio típico do bairro, ano a ano',tit:'Prédio típico do bairro',obj:'o bairro'});ligarOvl(draw);draw()}}
 
+/* ---------- Termômetro do mercado ---------- */
+let MER=null,NOT=null,MST={per:'5a'},MKRO=[];
+const RAW_NOT='https://raw.githubusercontent.com/gustavobianchini/quanto-vale-bh/main/dados/noticias.json';
+const nf=v=>v==null?'—':Math.round(v).toLocaleString('pt-BR');
+const pcs=(v,d=1)=>v==null?'—':(v>0?'+':v<0?'−':'')+Math.abs(v*100).toLocaleString('pt-BR',{maximumFractionDigits:d,minimumFractionDigits:d})+'%';
+const pc0=v=>v==null?'—':(v*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%';
+const MESN=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const mesL=m=>MESN[+m.slice(5,7)-1]+'/'+m.slice(2,4);
+const triL=q=>q.slice(5)+'º tri '+q.slice(0,4);
+const dataBR=d=>d?d.slice(8,10)+'/'+d.slice(5,7)+'/'+d.slice(0,4):'—';
+
+/* gráfico genérico em SVG (barras empilhadas ou linhas), com dica ao passar o mouse/dedo */
+function mk(fig,cfg){const s=fig.querySelector('svg'),tip=fig.querySelector('.tip');
+  const draw=()=>{const W=s.clientWidth,H=s.clientHeight;if(!W)return;const n=cfg.x.length;
+    const m={l:W<520?46:58,r:12,t:12,b:26},pw=W-m.l-m.r,ph=H-m.t-m.b,bw=pw/n;
+    const tot=i=>cfg.barras?cfg.series.reduce((a,sr)=>a+(sr.vals[i]||0),0):0;
+    let vs=[];if(cfg.barras)for(let i=0;i<n;i++)vs.push(tot(i));else cfg.series.forEach(sr=>vs.push(...sr.vals.filter(v=>v!=null)));
+    if(cfg.linha)vs.push(...cfg.linha.vals.filter(v=>v!=null));
+    const y1=Math.max(...vs)*1.08||1,y0=cfg.y0??0;
+    const X=i=>m.l+bw*(i+.5),Y=v=>m.t+ph-(v-y0)/(y1-y0)*ph;
+    let g='';const step0=Math.pow(10,Math.floor(Math.log10((y1-y0)/4)));const st=[1,2,2.5,5,10].map(k=>k*step0).find(k=>(y1-y0)/k<=5);
+    for(let v=Math.ceil(y0/st)*st;v<=y1;v+=st)g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--ln)"/><text x="${m.l-6}" y="${Y(v)+4}" text-anchor="end" font-size="12" fill="var(--mut)">${(cfg.fy||nf)(v)}</text>`;
+    if(cfg.sombra){const[a,b]=cfg.sombra;if(a>=0&&b>=a){g+=`<rect x="${m.l+bw*a}" y="${m.t}" width="${bw*(b-a+1)}" height="${ph}" fill="var(--ln)" opacity=".45"/>`;
+      if(bw*(b-a+1)>34)g+=`<text x="${m.l+bw*(a+b+1)/2}" y="${m.t+14}" text-anchor="middle" font-size="11" fill="var(--mut)">base incompleta</text>`}}
+    const every=Math.max(1,Math.ceil(n/(pw/(cfg.xw||46))));
+    for(let i=0;i<n;i++){const lb=cfg.tick?cfg.tick(cfg.x[i],i):(i%every===0?cfg.x[i]:null);if(lb!=null)g+=`<text x="${X(i)}" y="${H-7}" text-anchor="middle" font-size="12" fill="var(--mut)">${lb}</text>`}
+    if(cfg.barras){const gap=bw>=8?2:bw>=4?1:0,w=Math.max(1,bw-gap),rad=w>=10?4:0;
+      for(let i=0;i<n;i++){let acc=0;const vis=cfg.series.filter(sr=>sr.vals[i]>0);
+        vis.forEach((sr,k)=>{const v=sr.vals[i],yt=Y(acc+v),yb=Y(acc)-(k>0&&w>=6?2:0),h=Math.max(0,yb-yt),x=m.l+bw*i+gap/2,top=k===vis.length-1;
+          const op=cfg.fraco?.has(i)?.4:1;
+          g+=top&&rad&&h>rad?`<path d="M${x},${yb}V${yt+rad}q0,-${rad} ${rad},-${rad}h${w-2*rad}q${rad},0 ${rad},${rad}V${yb}Z" fill="${sr.cor}" opacity="${op}"/>`:`<rect x="${x}" y="${yt}" width="${w}" height="${h}" fill="${sr.cor}" opacity="${op}"/>`;acc+=v})}}
+    else for(const sr of cfg.series){let d='',pen=false;sr.vals.forEach((v,i)=>{if(v==null){pen=false;return}d+=(pen?'L':'M')+X(i).toFixed(1)+','+Y(v).toFixed(1);pen=true});
+      g+=`<path d="${d}" fill="none" stroke="${sr.cor}" stroke-width="2.5"${sr.dash?' stroke-dasharray="6 4"':''} stroke-linejoin="round"/>`;
+      if(cfg.pontos)sr.vals.forEach((v,i)=>{if(v!=null)g+=`<circle cx="${X(i)}" cy="${Y(v)}" r="4" fill="${sr.cor}" stroke="var(--pl2)" stroke-width="2"/>`})}
+    if(cfg.linha){let d='',pen=false;cfg.linha.vals.forEach((v,i)=>{if(v==null){pen=false;return}d+=(pen?'L':'M')+X(i).toFixed(1)+','+Y(v).toFixed(1);pen=true});
+      g+=`<path d="${d}" fill="none" stroke="${cfg.linha.cor}" stroke-width="2.5" stroke-linejoin="round"/>`}
+    g+=`<line id="hx" x1="0" x2="0" y1="${m.t}" y2="${m.t+ph}" stroke="var(--ink)" stroke-width="1" opacity="0"/><rect x="${m.l}" y="${m.t}" width="${pw}" height="${ph}" fill="transparent" id="hz"/>`;
+    s.innerHTML=g;
+    const hz=s.querySelector('#hz'),hx=s.querySelector('#hx');
+    const mv=ev=>{const r=s.getBoundingClientRect(),px=(ev.touches?ev.touches[0].clientX:ev.clientX)-r.left,i=Math.max(0,Math.min(n-1,Math.floor((px-m.l)/bw)));
+      hx.setAttribute('x1',X(i));hx.setAttribute('x2',X(i));hx.setAttribute('opacity',.5);tip.innerHTML=cfg.dica(i);tip.hidden=false;
+      const tw=tip.offsetWidth;let lx=X(i)+12;if(lx+tw>W-4)lx=X(i)-tw-12;tip.style.left=Math.max(4,lx)+'px';tip.style.top=(m.t+4)+'px'};
+    const sai=()=>{tip.hidden=true;hx.setAttribute('opacity',0)};
+    hz.addEventListener('pointermove',mv);hz.addEventListener('pointerdown',mv);hz.addEventListener('pointerleave',sai)};
+  const ro=new ResizeObserver(draw);ro.observe(s);MKRO.push(ro);draw()}
+const figM=(id,lbl,leg)=>`${leg?`<p class="legs">${leg}</p>`:''}<div class="fig mk" id="${id}"><svg role="img" aria-label="${esc(lbl)}"></svg><div class="tip" hidden></div></div>`;
+const lgB=(c,t)=>`<span><i style="--c:${c}"></i>${t}</span>`,lgL=(c,t,d)=>`<span><b class="l${d?' d':''}" style="--c:${c}"></b>${t}</span>`;
+const tabNum=(cab,linhas)=>`<details class="nums"><summary>Ver os números</summary><div class="scroll"><table><thead><tr>${cab.map((c,i)=>`<th${i?' class="n"':''}>${c}</th>`).join('')}</tr></thead><tbody>${linhas.map(l=>`<tr>${l.map((c,i)=>`<td${i?' class="n"':''}>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div></details>`;
+
+function gauge(nota,faixas){const W=320,H=190,cx=160,cy=168,R=130,r=92,ang=v=>Math.PI*(1-(Math.max(-1,Math.min(1,v))+1)/2);
+  const pt=(a,rr)=>[cx+rr*Math.cos(a),cy-rr*Math.sin(a)];const cores=['var(--frio)','var(--frio2)','var(--morno)','var(--quente2)','var(--quente)'];
+  let g='',lo=-1;faixas.forEach(([lim],k)=>{const hi=Math.min(lim,1),a0=ang(lo)-.012,a1=ang(hi)+.012;const[p1,p2,p3,p4]=[pt(a0,R),pt(a1,R),pt(a1,r),pt(a0,r)];
+    g+=`<path d="M${p1}A${R},${R} 0 0 1 ${p2}L${p3}A${r},${r} 0 0 0 ${p4}Z" fill="${cores[k]}"/>`;lo=hi});
+  const a=ang(nota),[nx,ny]=pt(a,R+6);
+  g+=`<line x1="${cx}" y1="${cy}" x2="${nx}" y2="${ny}" stroke="var(--ink)" stroke-width="4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="9" fill="var(--ink)"/>`;
+  g+=`<text x="${cx-R+18}" y="${cy+18}" font-size="13" fill="var(--mut)" text-anchor="middle">frio</text><text x="${cx+R-18}" y="${cy+18}" font-size="13" fill="var(--mut)" text-anchor="middle">quente</text>`;
+  return`<svg viewBox="0 0 ${W} ${H+8}" role="img" aria-label="Termômetro: ${esc(faixas.find(f=>nota<f[0])[1])}">${g}</svg>`}
+
+function sinalTxt(k,S,G){return{
+  vendas:`<b>${nf(S.vendas12)}</b> apartamentos vendidos em 12 meses · <b>${pcs(S.vendas_var)}</b> sobre os 12 meses anteriores`,
+  historico:`<b>${pcs(S.vs_hist)}</b> em relação à média de ${nf(S.media_hist)} por ano entre 2016 e 2025`,
+  preco:`<b>${pcs(S.preco_real)}</b> acima do IPCA · nos mesmos prédios o m² subiu ${pcs(S.preco_nom)}, a inflação foi ${pcs(S.ipca12)}`,
+  giro:G?`<b>${pc0(G.pct)}</b> dos apartamentos em prédios usados foram revendidos em 12 meses (antes ${pc0(G.pct_ant)}) · <b>${pcs(S.giro_var)}</b>`:'',
+  oferta:`<b>${nf(S.aprovadas)}</b> unidades residenciais aprovadas pela Prefeitura em 12 meses · <b>${pcs(S.aprovadas_var)}</b> (antes ${nf(S.aprovadas_ant)})`}[k]||''}
+
+async function mercado(){out.innerHTML='<p class="st">Carregando o termômetro…</p>';
+  try{if(!MER)MER=await(await fetch('data/mercado.json')).json()}catch(e){out.innerHTML='<p class="st">Não consegui carregar. Recarregue a página.</p>';return}
+  MKRO.forEach(r=>r.disconnect());MKRO=[];
+  const M=MER,S=M.sinais,T=S.termometro,fim=M.meta.fim,ini=M.meta.ini12;
+  const nota=T.componentes.map(c=>`<li><div class="sn"><span>${esc(c.nome)}</span><span class="nb" title="nota ${c.nota.toLocaleString('pt-BR')}"><i style="${c.nota>=0?`left:50%;width:${c.nota*50}%;background:var(--quente)`:`right:50%;width:${-c.nota*50}%;background:var(--frio)`}"></i></span><em>${c.nota>.15?'aquece ▲':c.nota<-.15?'esfria ▼':'neutro ●'}</em></div><p>${sinalTxt(c.k,S,M.giro)}</p></li>`).join('');
+  // séries
+  const mm=M.mensal.filter(x=>MST.per==='tudo'||x[0]>=String(+fim.slice(0,4)-5)+fim.slice(4));
+  const am=M.mensal.map((x,i,a)=>i<11?null:a.slice(i-11,i+1).reduce((t,y)=>t+y[1],0)/12),amF=am.slice(M.mensal.length-mm.length);
+  const lac=M.meta.lacuna,sa=mm.findIndex(x=>x[0]>=lac[0]),sb=mm.map(x=>x[0]<=lac[1]).lastIndexOf(true);
+  const A=M.anual,anoF=fim.slice(0,4),ytdA=M.ytd[anoF],ytdB=M.ytd[String(+anoF-1)];
+  const P0=M.preco,p0=P0[0],pm=new Map(P0.map(x=>[x[0],x])),P=[];{let[y,q]=[+p0[0].slice(0,4),+p0[0].slice(5)];const L=P0[P0.length-1][0];
+    for(;;){const k=y+'Q'+q;P.push(pm.get(k)||[k,null,null,0]);if(k===L)break;if(++q>4){q=1;y++}}}
+  const O=M.oferta;
+  out.innerHTML=`<div class="res"><div class="head"><div><h2>Termômetro do mercado</h2><p>Belo Horizonte · 12 meses de ${mesL(ini)} a ${mesL(fim)}, comparados aos 12 meses anteriores</p></div></div>
+  <div class="term">
+    <div class="gbox"><div class="gauge">${gauge(T.nota,T.faixas)}<div class="glab"><span>O mercado está</span><b>${esc(T.rotulo)}</b></div></div>
+      <ul class="sinais">${nota}</ul>
+      <p class="note">O termômetro é a média dos cinco sinais acima, cada um convertido numa nota de −1 (esfriando) a +1 (aquecendo): vendas ±10%, contra a média ±15%, preço real ±4%, revendas ±10% e aprovações ±25% contam como nota cheia. Pesos iguais, de propósito: é um resumo, não uma previsão.</p></div>
+    <aside class="news"><h3>Notícias recentes</h3><ul id="nl"><li class="st">Carregando…</li></ul><p class="note" id="nn"></p></aside>
+  </div>
+  <div class="g2">
+    <section><h3>Vendas por mês</h3>
+      <div class="bar"><div class="seg" role="group" aria-label="Período"><button class="${MST.per==='5a'?'on':''}" data-p="5a">Últimos 5 anos</button><button class="${MST.per==='tudo'?'on':''}" data-p="tudo">Desde 2008</button></div></div>
+      ${figM('fM','Apartamentos vendidos por mês, prédios novos e usados',lgB('var(--s-usado)','prédios usados')+lgB('var(--s-novo)',`prédios novos (até ${M.meta.novo_anos} anos)`)+lgL('var(--ink)','média de 12 meses'))}
+      <p class="note">Apartamentos com ITBI quitado no mês. Entre ${mesL(lac[0])} e ${mesL(lac[1])} a base da Prefeitura está incompleta (as vendas represadas aparecem em ago/15).</p></section>
+    <section><h3>Vendas por ano</h3>
+      ${figM('fA','Apartamentos vendidos por ano, prédios novos e usados',lgB('var(--s-usado)','prédios usados')+lgB('var(--s-novo)','prédios novos'))}
+      <p class="note">${anoF} vai até ${MESN[+fim.slice(5,7)-1]}: de jan a ${MESN[+fim.slice(5,7)-1]} foram ${nf(ytdA)} apartamentos, ${pcs(ytdA/ytdB-1)} sobre o mesmo período de ${+anoF-1}. 2014 e 2015 aparecem claros por causa da falha na base.</p>
+      ${tabNum(['Ano','Apartamentos','Em prédios novos','Casas','Volume (R$ bi)','Preço mediano do apto'],A.map(x=>[x[0]+(x[8]<12?'*':''),nf(x[1]),pc0(x[3]/x[1]),nf(x[2]),x[4].toLocaleString('pt-BR'),brl(x[5])]))}</section>
+    <section><h3>Novo × usado: R$/m² útil</h3>
+      ${figM('fN','R$ por m² útil mediano de apartamentos novos e usados por ano',lgL('var(--s-usado)','prédios usados')+lgL('var(--s-novo)','prédios novos'))}
+      <p class="note">Mediana do ano, valores declarados sem correção. Em ${A[A.length-1][0]}, o m² novo custa ${pcs(A[A.length-1][6]/A[A.length-1][7]-1,0)} a mais que o usado. Por isso, quando um bairro vende mais prédios novos, a mediana sobe mesmo sem nenhum imóvel ter valorizado, e o contrário também.</p></section>
+    <section><h3>Preço nos mesmos prédios</h3>
+      ${figM('fP','Índice de preço de BH comparando os mesmos prédios, nominal e descontada a inflação',lgL('var(--ink)','nominal')+lgL('var(--ink)','descontada a inflação (IPCA)',1))}
+      <p class="note">Base 100 em ${triL(p0[0])}. Compara cada prédio com ele mesmo entre trimestres, então a troca de novos por usados não afeta a curva. Nos últimos 12 meses: ${pcs(S.preco_nom)} nominal, ${pcs(S.preco_real)} acima da inflação.</p></section>
+  </div>
+  <section><h3>Quando a mediana engana</h3>
+    <p class="note" style="margin-top:0">Bairros em que a variação do R$/m² pela mediana (o que um ranking simples mostra) diverge da variação nos mesmos prédios, ${mesL(ini)}–${mesL(fim)} contra os 12 meses anteriores. A diferença vem de quais prédios foram negociados: mais ou menos prédios novos, mais ou menos prédios caros.</p>
+    <div class="scroll"><table class="stack"><thead><tr><th>Bairro</th><th class="n">Pela mediana</th><th class="n">Nos mesmos prédios</th><th class="n">Vendas em prédios novos</th><th class="n">Prédios comparados</th><th>Leitura</th></tr></thead><tbody>
+    ${M.mix.map(x=>`<tr class="click" data-b="${esc(x.bai)}"><td><b>${esc(titleCase(x.bai))}</b></td><td class="n">${pcs(x.aparente)}</td><td class="n"><b>${pcs(x.mesmos)}</b></td><td class="n">${pc0(x.novo0)} → ${pc0(x.novo1)}</td><td class="n">${x.n}</td><td>${x.aparente<0&&x.mesmos>0?'parece que caiu, mas subiu':x.aparente>0&&x.mesmos<0?'parece que subiu, mas caiu':x.aparente>x.mesmos?'subiu menos do que parece':'subiu mais do que parece'}</td></tr>`).join('')}
+    </tbody></table></div><p class="note">Em BH como um todo os dois números quase coincidem (${pcs(S.aparente_bh)} pela mediana, ${pcs(S.mesmos_bh)} nos mesmos prédios); a distorção aparece bairro a bairro. Só bairros com 15+ prédios negociados em cada período e 8+ prédios comparáveis. Clique para abrir o bairro.</p></section>
+  ${O?`<section><h3>Oferta nova: lançamentos aprovados, obras e entregas</h3>
+    ${figM('fO','Unidades residenciais aprovadas, com obra iniciada e entregues por ano',lgL('var(--s-apr)','aprovadas')+lgL('var(--s-ini)','obras iniciadas')+lgL('var(--s-ent)','entregues (baixa de construção)'))}
+    <p class="note">Unidades residenciais em projetos novos licenciados pela Prefeitura (sem regularizações), contadas uma vez por processo. "Aprovadas" é a data de aprovação do projeto; "obras iniciadas", a comunicação de início de obra (registrada de forma consistente só desde ${O.inicio_desde}); "entregues", a baixa de construção (habite-se). ${anoF} vai até ${MESN[+fim.slice(5,7)-1]}. Fonte: Projetos de edificação licenciados, PBH, versão de ${dataBR(O.versao.slice(0,4)+'-'+O.versao.slice(4,6)+'-'+O.versao.slice(6))}.</p>
+    ${tabNum(['Ano','Aprovadas','Obras iniciadas','Entregues'],O.anual.map(x=>[x[0],nf(x[1]),x[0]>=O.inicio_desde?nf(x[2]):'—',nf(x[3])]))}
+    <h3 class="rk">Maiores projetos aprovados nos últimos 12 meses</h3>
+    <div class="scroll"><table class="stack"><thead><tr><th>Endereço</th><th>Bairro</th><th class="n">Unidades</th><th class="n">Aprovado em</th><th class="n">Obra iniciada</th></tr></thead><tbody>
+    ${O.recentes.map(x=>`<tr><td>${esc(x.end.split(',').slice(0,2).join(','))}</td><td>${x.bai?esc(titleCase(x.bai)):'—'}</td><td class="n">${nf(x.und)}</td><td class="n">${dataBR(x.aprov)}</td><td class="n">${x.inicio?dataBR(x.inicio):'ainda não'}</td></tr>`).join('')}
+    </tbody></table></div><p class="note">Projetos com 20 ou mais unidades residenciais. Aprovação não é lançamento: algumas obras demoram anos para começar ou não saem do papel.</p></section>`:''}
+  <p class="note">O ITBI registra a escritura, que nos imóveis na planta costuma sair na entrega das chaves. Pesquisas de vendas de lançamentos, citadas nas notícias, medem contratos assinados antes disso e podem apontar outra direção no mesmo período.</p></div>`;
+  out.querySelectorAll('.seg button[data-p]').forEach(b=>b.onclick=()=>{MST.per=b.dataset.p;mercado()});
+  out.querySelectorAll('tr.click[data-b]').forEach(tr=>tr.onclick=()=>{tab('b',true);bairro(tr.dataset.b)});
+  // gráficos
+  const anosTick=(x,i)=>x.slice(5,7)==='01'&&(MST.per!=='tudo'||+x.slice(0,4)%2===0)?(MST.per==='tudo'?"'"+x.slice(2,4):x.slice(0,4)):null;
+  mk($('#fM'),{x:mm.map(x=>x[0]),barras:1,series:[{cor:'var(--s-usado)',vals:mm.map(x=>x[1]-x[3])},{cor:'var(--s-novo)',vals:mm.map(x=>x[3])}],linha:{cor:'var(--ink)',vals:amF},
+    sombra:sa>=0?[sa,sb]:null,tick:anosTick,dica:i=>{const x=mm[i];return`<b>${mesL(x[0])}</b><br>${nf(x[1])} apartamentos<br>${nf(x[3])} em prédios novos (${pc0(x[3]/x[1])})<br>${nf(x[2])} casas${amF[i]?`<br>média 12 meses: ${nf(amF[i])}`:''}`}});
+  mk($('#fA'),{x:A.map(x=>x[0]),barras:1,series:[{cor:'var(--s-usado)',vals:A.map(x=>x[1]-x[3])},{cor:'var(--s-novo)',vals:A.map(x=>x[3])}],fraco:new Set(A.map((x,i)=>x[0]==='2014'||x[0]==='2015'?i:-1)),
+    xw:34,tick:(x,i)=>(A.length>12&&i%2&&i!==A.length-1)?null:"'"+x.slice(2)+(A[i][8]<12?'*':''),
+    dica:i=>{const x=A[i];return`<b>${x[0]}${x[8]<12?` (jan–${MESN[x[8]-1]})`:''}</b><br>${nf(x[1])} apartamentos<br>${nf(x[3])} em prédios novos (${pc0(x[3]/x[1])})<br>volume R$ ${x[4].toLocaleString('pt-BR')} bi<br>preço mediano ${brl(x[5])}`}});
+  mk($('#fN'),{x:A.map(x=>x[0]),series:[{cor:'var(--s-usado)',vals:A.map(x=>x[7])},{cor:'var(--s-novo)',vals:A.map(x=>x[6])}],pontos:1,xw:34,fy:v=>v>=1000?(v/1000).toLocaleString('pt-BR')+' mil':v,
+    tick:(x,i)=>(A.length>12&&i%2&&i!==A.length-1)?null:"'"+x.slice(2),
+    dica:i=>{const x=A[i];return`<b>${x[0]}</b><br>novos: ${brl(x[6])}/m²<br>usados: ${brl(x[7])}/m²${x[6]&&x[7]?`<br>diferença: ${pcs(x[6]/x[7]-1,0)}`:''}`}});
+  mk($('#fP'),{x:P.map(x=>x[0]),series:[{cor:'var(--ink)',vals:P.map(x=>x[1]==null?null:x[1]/p0[1]*100)},{cor:'var(--ink)',dash:1,vals:P.map(x=>x[2]==null?null:x[2]/p0[2]*100)}],sombra:[P.findIndex(x=>x[1]==null),P.map(x=>x[1]==null).lastIndexOf(true)],
+    tick:(x,i)=>x.endsWith('Q1')&&+x.slice(0,4)%(P.length>40?3:2)===0?x.slice(0,4):null,
+    dica:i=>{const x=P[i];if(x[1]==null)return`<b>${triL(x[0])}</b><br>base da Prefeitura incompleta`;return`<b>${triL(x[0])}</b><br>nominal: ${(x[1]/p0[1]*100).toFixed(0)}<br>descontada a inflação: ${(x[2]/p0[2]*100).toFixed(0)}<br>${nf(x[3])} vendas`}});
+  if(O){const oa=O.anual;mk($('#fO'),{x:oa.map(x=>String(x[0])),series:[{cor:'var(--s-apr)',vals:oa.map(x=>x[1])},{cor:'var(--s-ini)',vals:oa.map(x=>x[0]>=O.inicio_desde?x[2]:null)},{cor:'var(--s-ent)',vals:oa.map(x=>x[3])}],pontos:1,xw:34,
+    tick:(x,i)=>(oa.length>12&&i%2&&i!==oa.length-1)?null:"'"+x.slice(2)+(x===anoF?'*':''),
+    dica:i=>{const x=oa[i];return`<b>${x[0]}${String(x[0])===anoF?' (até '+MESN[+fim.slice(5,7)-1]+')':''}</b><br>aprovadas: ${nf(x[1])}<br>obras iniciadas: ${x[0]>=O.inicio_desde?nf(x[2]):'—'}<br>entregues: ${nf(x[3])}`}})}
+  // notícias (atualizadas todo dia no repositório; cópia do site como reserva)
+  if(!NOT){for(const u of[RAW_NOT,'data/noticias.json']){try{const r=await fetch(u,{cache:'no-cache'});if(r.ok){NOT=await r.json();break}}catch{}}}
+  const nl=$('#nl');if(!nl)return;
+  if(!NOT?.itens?.length){nl.innerHTML='<li class="st">Sem notícias no momento.</li>';return}
+  nl.innerHTML=NOT.itens.slice(0,10).map(x=>`<li><a href="${esc(x.u)}" target="_blank" rel="noopener">${esc(x.t)}</a><span>${dataBR(x.d)} · ${esc(x.f)}${x.l?' <b class="tg">lançamento</b>':''}</span></li>`).join('');
+  $('#nn').textContent=`Manchetes do Google Notícias sobre imóveis em BH, atualizadas todo dia (última: ${dataBR(NOT.atualizado)}). Os textos são dos veículos.`}
+
 /* ---------- Destaques do mês ---------- */
 let DST=null,dstMes=null;
 const pct=(v,s=true)=>v==null?'—':(s&&v>0?'+':'')+(v*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%';
@@ -463,8 +626,8 @@ async function destaques(){out.innerHTML='<p class="st">Carregando destaques…<
   const cabV=[['Endereço'],['Bairro'],['Data',1],['Valor',1],['Área útil ≈',1],['R$/m² útil ≈',1]];
   const rev=x=>`<tr><td>${end(x)}</td><td>${esc(titleCase(x.bai||''))}</td><td class="n">${brl(x.v_ant)} <span class="note">(${x.d_ant.slice(0,4)})</span></td><td class="n">${brl(x.valor)}</td><td class="n">${pct(x.nominal)}</td><td class="n"><b class="${x.real>=0?'up':'dn'}">${pct(x.real)}</b><br><span class="note">${pct(x.real_aa)} ao ano</span></td></tr>`;
   const cabR=[['Endereço'],['Bairro'],['Comprado por',1],['Vendido por',1],['Variação',1],['Acima da inflação',1]];
-  const bz=x=>`<tr><td><a href="#" class="gob" data-b="${esc(x.bai)}">${esc(titleCase(x.bai))}</a></td><td class="n">${brl(x.m2_ant)}</td><td class="n">${brl(x.m2)}</td><td class="n"><b class="${x.var>=0?'up':'dn'}">${pct(x.var)}</b></td></tr>`;
-  const cabB=[['Bairro'],['Antes',1],['Agora',1],['Variação',1]];
+  const bz=x=>`<tr><td><a href="#" class="gob" data-b="${esc(x.bai)}">${esc(titleCase(x.bai))}</a></td><td class="n">${brl(x.m2)}</td><td class="n">${x.var_med!=null?pct(x.var_med):'—'}</td><td class="n"><b class="${x.var>=0?'up':'dn'}">${pct(x.var)}</b></td></tr>`;
+  const cabB=[['Bairro'],['R$/m² agora',1],['Pela mediana',1],['Mesmos prédios',1]];
   out.innerHTML=`<div class="res"><div class="head"><div><h2>Destaques de ${mesTxt(M.mes)}</h2><p>Negócios residenciais registrados no ITBI no mês. Atualizado todo mês com o novo relatório da PBH.</p></div>
   <label>Mês <select id="dm">${DST.meses.map(m=>`<option value="${m.mes}"${m.mes===M.mes?' selected':''}>${mesTxt(m.mes)}</option>`).join('')}</select></label></div>
   <div class="kpis"><div class="kpi on"><span>Negócios residenciais no mês</span><b>${M.negocios.toLocaleString('pt-BR')}</b><em>${anoAnt!=null?pct(anoAnt)+' contra '+mesTxt(M.mes.replace(/^\d{4}/,y=>y-1)):''}</em></div>
@@ -477,16 +640,16 @@ async function destaques(){out.innerHTML='<p class="st">Carregando destaques…<
   <h3 class="sec">Revendas que mais valorizaram</h3>${tbl(cabR,M.valorizaram.map(rev))}
   <h3 class="sec">Revendas que mais desvalorizaram</h3>${tbl(cabR,M.desvalorizaram.map(rev))}
   <p class="note">Mesma unidade (mesmo endereço, apartamento e área) vendida de novo após 2 anos ou mais, ordenada pelo ganho real por ano. Diferenças grandes podem refletir reforma, compra abaixo do mercado (leilão, venda entre parentes) ou valor declarado impreciso.</p>
-  <div class="duo"><div><h3 class="sec">Bairros que mais subiram</h3>${tbl(cabB,M.bairros_subiram.map(bz))}</div><div><h3 class="sec">Bairros que mais caíram</h3>${tbl(cabB,M.bairros_cairam.map(bz))}</div></div>
-  <p class="note">"Agora" = R$/m² útil dos 12 meses até ${mesTxt(M.mes)}; "antes" = os 12 meses anteriores (mediana entre prédios, só bairros com 15+ prédios negociados nos dois períodos). IPCA no mesmo intervalo: ${pct(M.bairros_ipca)}. Valores declarados, sem as vendas que a PBH avaliou 20%+ acima.</p></div>`;
+  <div class="duo"><div><h3 class="sec">Bairros que mais subiram</h3>${tbl(cabB,M.bairros_subiram.map(bz))}</div><div><h3 class="sec">${M.bairros_cairam.some(x=>x.var>0)?"Bairros que menos subiram":"Bairros que mais caíram"}</h3>${tbl(cabB,M.bairros_cairam.map(bz))}</div></div>
+  <p class="note">Variação do R$/m² útil nos 12 meses até ${mesTxt(M.mes)} contra os 12 anteriores, comparando os mesmos prédios (8+ prédios com vendas nos dois períodos), para a troca de prédios novos por usados não distorcer; "pela mediana" mostra o que um ranking simples diria. Só bairros com 15+ prédios negociados nos dois períodos. IPCA no mesmo intervalo: ${pct(M.bairros_ipca)}. Valores declarados, sem as vendas que a PBH avaliou 20%+ acima.</p></div>`;
   $('#dm').onchange=e=>{dstMes=e.target.value;destaques()};
   out.querySelectorAll('a.go').forEach(a=>a.onclick=ev=>{ev.preventDefault();tab('a');q.value=a.dataset.q;$('#f').requestSubmit()});
   out.querySelectorAll('a.gob').forEach(a=>a.onclick=ev=>{ev.preventDefault();tab('b',true);bairro(a.dataset.b)})}
 
-function tab(t,semCarregar){for(const[k,id]of[['a','#tA'],['b','#tB'],['c','#tC']]){$(id).classList.toggle('on',t===k);$(id).setAttribute('aria-pressed',t===k)}
-  $('#f').hidden=t!=='a';hint.hidden=t!=='a';$('#sub').textContent={a:'Todas as transmissões de imóveis quitadas na Prefeitura desde 2008, por endereço. Digite a rua e o número: “Rua Chile 197”.',b:'Onde mais se compra e onde o m² é mais caro, com os negócios registrados no ITBI.',c:'O que aconteceu no mercado no mês: vendas mais caras, prédios e bairros mais negociados, revendas que mais ganharam e perderam.'}[t];
-  if(semCarregar)return;if(t==='b')bairros();else if(t==='c')destaques();else if(cur)street();else out.innerHTML='<p class="st">Os resultados aparecem aqui.</p>'}
-$('#tA').onclick=()=>tab('a');$('#tB').onclick=()=>tab('b');$('#tC').onclick=()=>tab('c');
+function tab(t,semCarregar){for(const[k,id]of[['a','#tA'],['b','#tB'],['c','#tC'],['d','#tD']]){$(id).classList.toggle('on',t===k);$(id).setAttribute('aria-pressed',t===k)}
+  $('#f').hidden=t!=='a';hint.hidden=t!=='a';$('#sub').textContent={a:'Todas as transmissões de imóveis quitadas na Prefeitura desde 2008, por endereço. Digite a rua e o número: “Rua Chile 197”.',b:'Onde mais se compra e onde o m² é mais caro, com os negócios registrados no ITBI.',c:'O que aconteceu no mercado no mês: vendas mais caras, prédios e bairros mais negociados, revendas que mais ganharam e perderam.',d:'O mercado de BH está aquecido ou esfriando? Vendas, preços, revendas e lançamentos, com os dados da Prefeitura.'}[t];
+  if(semCarregar)return;if(t==='b')bairros();else if(t==='c')destaques();else if(t==='d')mercado();else if(cur)street();else out.innerHTML='<p class="st">Os resultados aparecem aqui.</p>'}
+$('#tA').onclick=()=>tab('a');$('#tB').onclick=()=>tab('b');$('#tC').onclick=()=>tab('c');$('#tD').onclick=()=>tab('d');
 
 fetch('data/idx.json').then(r=>r.json()).then(d=>{IDX=d;
   hint.innerHTML=`${d.length.toLocaleString('pt-BR')} ruas na base. Exemplos: <b>Rua Chile 197</b> · <b>Avenida Afonso Pena 2755</b> · <b>Rua Paraiba</b>`;

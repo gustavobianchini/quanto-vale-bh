@@ -133,39 +133,43 @@ def alvaras(pasta):
     return destino
 
 
-BUSCAS_NOTICIAS = {
-    "mercado": '"mercado imobiliário" "Belo Horizonte"',
-    "lancamentos": '"Belo Horizonte" (lançamento OR lançamentos) (imobiliário OR apartamentos OR residencial)',
-}
+BUSCAS_NOTICIAS = [
+    '"mercado imobiliário" "Belo Horizonte"',
+    '"Belo Horizonte" (lançamento OR lançamentos OR empreendimento) (imobiliário OR apartamentos OR residencial)',
+    '"Belo Horizonte" (imóveis OR apartamentos) (vendas OR preço OR aluguel OR financiamento)',
+]
+TEMA = re.compile(r"imóve|imobili|apartament|lançament|construtor|incorporador|minha casa|mcmv|aluguel|vgv|residencia|condomín"
+                  r"|sinduscon|secovi|\bcmi\b|m²|metro quadrado|prédio|empreendiment|habitaç|financiamento|itbi|moradia", re.I)
+LOCAL = re.compile(r"belo horizonte|\bbh\b|minas|mineir|nova lima|contagem|betim|pampulha|savassi|lagoa santa|grande bh", re.I)
+LANC = re.compile(r"lançament|\bvgv\b|empreendiment|novo (complexo|residencial|prédio|edifício|condomínio)|\d+ apartamentos", re.I)
 
 
-def noticias(destino, por_busca=12):
-    """Manchetes do Google Notícias (RSS). Guarda só título, veículo, data e link."""
+def noticias(destino, maximo=15):
+    """Manchetes do Google Notícias (RSS) sobre imóveis em BH. Guarda só título, veículo, data e link."""
     import xml.etree.ElementTree as ET
     from email.utils import parsedate_to_datetime
-    out = {}
-    for k, q in BUSCAS_NOTICIAS.items():
-        url = "https://news.google.com/rss/search?" + urllib.parse.urlencode({"q": q + " when:60d", "hl": "pt-BR", "gl": "BR", "ceid": "BR:pt-419"})
-        itens, vistos = [], set()
+    itens, vistos = [], set()
+    for q in BUSCAS_NOTICIAS:
+        url = "https://news.google.com/rss/search?" + urllib.parse.urlencode({"q": q + " when:45d", "hl": "pt-BR", "gl": "BR", "ceid": "BR:pt-419"})
         for it in ET.fromstring(get(url)).iter("item"):
             tit = (it.findtext("title") or "").strip(); fonte = (it.findtext("source") or "").strip()
             if fonte and tit.endswith(" - " + fonte):
                 tit = tit[: -len(fonte) - 3]
             chave = re.sub(r"\W+", "", tit.lower())[:60]
-            if not tit or chave in vistos:
+            if not tit or chave in vistos or not TEMA.search(tit) or not LOCAL.search(tit):
                 continue
             vistos.add(chave)
             try:
                 dt = parsedate_to_datetime(it.findtext("pubDate")).date().isoformat()
             except Exception:  # noqa: BLE001
                 dt = ""
-            itens.append({"t": tit, "f": fonte, "d": dt, "u": (it.findtext("link") or "").strip()})
-        itens.sort(key=lambda x: x["d"], reverse=True)
-        out[k] = itens[:por_busca]
-    out["atualizado"] = date.today().isoformat()
+            itens.append({"t": tit, "f": fonte, "d": dt, "u": (it.findtext("link") or "").strip(), "l": bool(LANC.search(tit))})
+    itens.sort(key=lambda x: x["d"], reverse=True)
+    if not itens:
+        raise RuntimeError("nenhuma manchete encontrada")
     with open(destino, "w") as f:
-        json.dump(out, f, ensure_ascii=False, indent=0)
-    print(f"Notícias: {', '.join(f'{k} {len(v)}' for k, v in out.items() if isinstance(v, list))}")
+        json.dump({"atualizado": date.today().isoformat(), "itens": itens[:maximo]}, f, ensure_ascii=False, indent=0)
+    print(f"Notícias: {len(itens[:maximo])} manchetes ({sum(x['l'] for x in itens[:maximo])} sobre lançamentos)")
 
 
 SGS = {"ipca": 433, "cdi": 4391, "usd": 3696}
@@ -207,6 +211,6 @@ if __name__ == "__main__":
     except Exception as e:  # noqa: BLE001
         print(f"AVISO: projetos licenciados indisponíveis ({e})")
     try:
-        noticias(os.path.join(base, "noticias.json"))
+        noticias("dados/noticias.json")
     except Exception as e:  # noqa: BLE001
         print(f"AVISO: notícias indisponíveis ({e})")

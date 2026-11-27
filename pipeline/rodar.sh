@@ -25,6 +25,8 @@ echo "== 6/7 Estimativas de valor";     python pipeline/avaliacao.py "$W/itbi_bh
                                         python pipeline/exportar_perfis.py "$W/valores.pkl" "$S/data" 200 dados/calibracao.csv "$W/componentes.pkl" dados/pesos.json
 echo "== 7/7 Bairros e página";         python pipeline/bairros.py "$W/itbi_bh.csv" dados/calibracao.csv "$S/data" 20
                                         python pipeline/destaques.py "$W/itbi_bh.csv" dados/calibracao.csv "$B/econ.json" "$S/data/destaques.json"
+                                        python pipeline/mercado.py "$W/itbi_bh.csv" dados/calibracao.csv "$B/econ.json" "$W/perfil.pkl" "$B/alvaras" "$S/data/mercado.json"
+                                        [[ -f dados/noticias.json ]] && cp dados/noticias.json "$S/data/noticias.json"
                                         python pipeline/montar_site.py site/index.html "$S" "$W/itbi_bh.csv" "$W/valores.pkl" "$B/econ.json"
 cp "$B/econ.json" dados/econ.json
 echo "Pronto: site em $S/"
