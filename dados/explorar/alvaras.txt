@@ -1,0 +1,383 @@
+b'ID_PROJETO_EDIFICACOES;NUMERO_PROCESSO;NUM_REQUERIMENTO;SITUACAO_REQUERIMENTO;TITULO_PROJETO;TIPO;SITUACAO_PROJETO;NUM_ULTIMO_ALVARA;DT_EMISSAO_ALVARA_CONSTRUCAO;DT_CONCESSAO_ULTIMO_ALVARA;DT_VALIDADE_ULTIMO_ALVARA;DATA_COMUNICADO_INICIO_OBRA;DATA_ULTIMA_BAIXA;TIPO_ULTIMA_BAIXA;ENDERECO;LOTE_PROJETO;USO_GERAL;QTD_UND_RESIDENCIAL;QTD_UND_NAO_RESIDENCIAL;AREA_CONSTRUIDA;TIPO_APROVACAO;DATA_APROVACAO;AREA_LIQUIDA;QTDE_PAVIMENTOS;GEOMETRIA\n233067;010012149087;2019A04172;Deferido;APROVACAO INICIAL;LICENCIAMENTO;APROVADO;;;;;;1992-07-01 12:00:00;BAIXA TOTAL;;Zona Fiscal 313 Quarteir\xc3\xa3o 038  Lote(s) 018;RESIDENCIAL;1;0;243.21;Convencional;27-12-1989;0.0;2;MULTIPOLYGON (((610352.22 7803335.49, 610325.22 7803335.89, 610325.17 7803332.37, 610325.01 7803322.39, 610352.01 7803321.99, 610352.22 7803335.49)))\n79234;010012429608;1995M01019;Deferido;APROVACAO INICIAL;LICENCIAMENTO;APROVADO;199600246;2025-07-22 09:24:10;1996-01-03 00:00:00;1999-07-03 00:00:00;;1998-05-12 12:00:00;BAIXA TOTAL;;Zona Fiscal 304 Quarteir\xc3\xa3o 019  Lote(s) 005;RESIDENCIAL;4;0;556.12;Convencional;03-01-1996;361.76;4;MULTIPOLYGON (((606383.82 7802468.08, 606370.30 7802472.61, 606366.27 7802461.41, 606393.46 7802452.39, 606397.44 7802463.52, 606383.82 7802468.08)))\n304730;010014409086;2024A24012;Deferido;APROVACAO INICIAL;LICENCIAMENTO;APROVADO;199000027;2024-12-23 09:41:36;1990-01-05 00:00:00;1991-01-05 00:00:00;;1991-10-15 12:00:00;BAIXA TOTAL;;Zona Fiscal 009 Quarteir\xc3\xa3o 011  Lote(s) 003Y;MISTO;30;1;8595.16;Convenci'
+/tmp/alv/alvaras_20261103.csv (85343, 25)
+['ID_PROJETO_EDIFICACOES', 'NUMERO_PROCESSO', 'NUM_REQUERIMENTO', 'SITUACAO_REQUERIMENTO', 'TITULO_PROJETO', 'TIPO', 'SITUACAO_PROJETO', 'NUM_ULTIMO_ALVARA', 'DT_EMISSAO_ALVARA_CONSTRUCAO', 'DT_CONCESSAO_ULTIMO_ALVARA', 'DT_VALIDADE_ULTIMO_ALVARA', 'DATA_COMUNICADO_INICIO_OBRA', 'DATA_ULTIMA_BAIXA', 'TIPO_ULTIMA_BAIXA', 'ENDERECO', 'LOTE_PROJETO', 'USO_GERAL', 'QTD_UND_RESIDENCIAL', 'QTD_UND_NAO_RESIDENCIAL', 'AREA_CONSTRUIDA', 'TIPO_APROVACAO', 'DATA_APROVACAO', 'AREA_LIQUIDA', 'QTDE_PAVIMENTOS', 'GEOMETRIA']
+                                                                        0                                            1                                             2                                            3  \
+ID_PROJETO_EDIFICACOES                                             233067                                        79234                                        304730                                        82676   
+NUMERO_PROCESSO                                              010012149087                                 010012429608                                  010014409086                                 010121099900   
+NUM_REQUERIMENTO                                               2019A04172                                   1995M01019                                    2024A24012                                   1999M00348   
+SITUACAO_REQUERIMENTO                                            Deferido                                     Deferido                                      Deferido                                     Deferido   
+TITULO_PROJETO                                          APROVACAO INICIAL                            APROVACAO INICIAL                             APROVACAO INICIAL                            APROVACAO INICIAL   
+TIPO                                                        LICENCIAMENTO                                LICENCIAMENTO                                 LICENCIAMENTO                                LICENCIAMENTO   
+SITUACAO_PROJETO                                                 APROVADO                                     APROVADO                                      APROVADO                                     APROVADO   
+NUM_ULTIMO_ALVARA                                                     NaN                                    199600246                                     199000027                                    199902048   
+DT_EMISSAO_ALVARA_CONSTRUCAO                                          NaN                          2025-07-22 09:24:10                           2024-12-23 09:41:36                          2024-09-17 14:33:17   
+DT_CONCESSAO_ULTIMO_ALVARA                                            NaN                          1996-01-03 00:00:00                           1990-01-05 00:00:00                          1999-02-12 00:00:00   
+DT_VALIDADE_ULTIMO_ALVARA                                             NaN                          1999-07-03 00:00:00                           1991-01-05 00:00:00                          2001-02-12 00:00:00   
+DATA_COMUNICADO_INICIO_OBRA                                           NaN                                          NaN                                           NaN                                          NaN   
+DATA_ULTIMA_BAIXA                                     1992-07-01 12:00:00                          1998-05-12 12:00:00                           1991-10-15 12:00:00                          2000-06-08 00:00:00   
+TIPO_ULTIMA_BAIXA                                             BAIXA TOTAL                                  BAIXA TOTAL                                   BAIXA TOTAL                                  BAIXA TOTAL   
+ENDERECO                                                              NaN                                          NaN                                           NaN                                          NaN   
+LOTE_PROJETO                  Zona Fiscal 313 Quarteirão 038  Lote(s) 018  Zona Fiscal 304 Quarteirão 019  Lote(s) 005  Zona Fiscal 009 Quarteirão 011  Lote(s) 003Y  Zona Fiscal 255 Quarteirão 025  Lote(s) 010   
+USO_GERAL                                                     RESIDENCIAL                                  RESIDENCIAL                                         MISTO                                  RESIDENCIAL   
+QTD_UND_RESIDENCIAL                                                     1                                            4                                            30                                            6   
+QTD_UND_NAO_RESIDENCIAL                                                 0                                            0                                             1                                            0   
+AREA_CONSTRUIDA                                                    243.21                                       556.12                                       8595.16                                      1108.66   
+TIPO_APROVACAO                                               Convencional                                 Convencional                                  Convencional                                 Convencional   
+DATA_APROVACAO                                                 27-12-1989                                   03-01-1996                                    05-01-1990                                   12-02-1999   
+AREA_LIQUIDA                                                          0.0                                       361.76                                           0.0                                       699.44   
+QTDE_PAVIMENTOS                                                         2                                            4                                            21                                            6   
+
+                                                                        4                                            5                                            6                                                            7  
+ID_PROJETO_EDIFICACOES                                             171416                                       296991                                        82403                                                       326612  
+NUMERO_PROCESSO                                              010015289025                                 010015519047                                 010084659901                                                 010013539083  
+NUM_REQUERIMENTO                                               2015A13009                                   2024A20597                                   1999M00075                                                   2026A31342  
+SITUACAO_REQUERIMENTO                                            Deferido                                     Deferido                                     Deferido                                                     Deferido  
+TITULO_PROJETO                                          APROVACAO INICIAL                            APROVACAO INICIAL                            APROVACAO INICIAL                                            APROVACAO INICIAL  
+TIPO                                                        LICENCIAMENTO                                LICENCIAMENTO                                LICENCIAMENTO                                                LICENCIAMENTO  
+SITUACAO_PROJETO                                                 APROVADO                                     APROVADO                                     APROVADO                                                     APROVADO  
+NUM_ULTIMO_ALVARA                                                     NaN                                    199000044                                    199901527                                                    199000041  
+DT_EMISSAO_ALVARA_CONSTRUCAO                                          NaN                          2024-05-27 10:46:40                          1999-02-02 00:00:00                                          2026-06-09 11:48:16  
+DT_CONCESSAO_ULTIMO_ALVARA                                            NaN                          1990-01-11 00:00:00                          1999-02-01 00:00:00                                          1990-01-11 00:00:00  
+DT_VALIDADE_ULTIMO_ALVARA                                             NaN                          1991-01-11 00:00:00                          2002-08-01 00:00:00                                          1990-01-11 00:00:00  
+DATA_COMUNICADO_INICIO_OBRA                                           NaN                                          NaN                                          NaN                                                          NaN  
+DATA_ULTIMA_BAIXA                                     1990-07-17 11:38:57                                          NaN                                          NaN                                          1991-07-25 12:00:00  
+TIPO_ULTIMA_BAIXA                                             BAIXA TOTAL                                          NaN                                          NaN                                                  BAIXA TOTAL  
+ENDERECO                                           RUA DOS MACARICOS, 110                                          NaN                              RUA NEWTON, 214                                                          NaN  
+LOTE_PROJETO                  Zona Fiscal 912 Quarteirão 021  Lote(s) 027  Zona Fiscal 102 Quarteirão 004C Lote(s) 003  Zona Fiscal 121 Quarteirão 261  Lote(s) 002  Zona Fiscal 305 Quarteirão 026  Lote(s) 001,002,003,004,...  
+USO_GERAL                                                     RESIDENCIAL                              NÃO RESIDENCIAL                                  RESIDENCIAL                                                  RESIDENCIAL  
+QTD_UND_RESIDENCIAL                                                     1                                            0                                            0                                                           45  
+QTD_UND_NAO_RESIDENCIAL                                                 0                                            1                                            0                                                            0  
+AREA_CONSTRUIDA                                                     259.6                                       758.77                                          0.0                                                      3320.92  
+TIPO_APROVACAO                                               Convencional                                 Convencional                                          NaN                                                 Convencional  
+DATA_APROVACAO                                                 22-08-1989                                   11-01-1990                                   01-02-1999                                                   11-01-1990  
+AREA_LIQUIDA                                                          0.0                                          0.0                                       283.96                                                          0.0  
+QTDE_PAVIMENTOS                                                         1                                            2                                            2                                                           13  
+
+== ID_PROJETO_EDIFICACOES n_unique 85343
+ID_PROJETO_EDIFICACOES
+233067    1
+79234     1
+304730    1
+82676     1
+171416    1
+296991    1
+82403     1
+326612    1
+245792    1
+76623     1
+87461     1
+75439     1
+
+== NUMERO_PROCESSO n_unique 42017
+NUMERO_PROCESSO
+NaN             41118
+010000019787       28
+010442088881       15
+010388261509        8
+011133381108        7
+010841029676        6
+011021651200        6
+011833561265        6
+011418261321        6
+011363901600        6
+010095969583        5
+010384741301        5
+
+== NUM_REQUERIMENTO n_unique 85343
+NUM_REQUERIMENTO
+2019A04172    1
+1995M01019    1
+2024A24012    1
+1999M00348    1
+2015A13009    1
+2024A20597    1
+1999M00075    1
+2026A31342    1
+2020A07165    1
+1993M01183    1
+2002M01110    1
+1992M00078    1
+
+== SITUACAO_REQUERIMENTO n_unique 5
+SITUACAO_REQUERIMENTO
+Deferido     83668
+Acatado        785
+Corrigido      449
+Enviado        269
+Pendente       172
+
+== TITULO_PROJETO n_unique 15
+TITULO_PROJETO
+APROVACAO INICIAL                                 47707
+LEVANTAMENTO TOTAL                                21124
+MODIFICACAO COM ACRESCIMO DE AREA CONSTRUIDA       5172
+LEVANTAMENTO DO ACRESCIMO                          4949
+LEVANTAMENTO C- PROJ DE MODIF.                     1914
+MODIF. S- ALTERACAO AREA CONSTRUIDA E LIQUIDA      1439
+MODIF. COM DECRESCIMO DE AREA CONSTRUIDA           1240
+LEVANTAMENTO DO ACRESC. C- PROJ DEMODIF.            939
+TÍTULO INVÁLIDO: PROJETO MIGRADO EM 2013            411
+FECHAMENTO VARANDA                                  309
+MODIFI. S- ALT. AREA CONST.  C- ALT.  AREA LIQ       66
+LEVANTAMENTO DO DECRESCIMO                           35
+
+== TIPO n_unique 2
+TIPO
+LICENCIAMENTO    55624
+REGULARIZACAO    29719
+
+== SITUACAO_PROJETO n_unique 11
+SITUACAO_PROJETO
+APROVADO                                        83052
+REQUERIMENTO                                     1675
+PENDENTE_NOTIFICACAO_GERAL                        310
+PENDENTE_CORRECAO_DOCUMENTACAO                     89
+CORRIGIDO_NOTIFICACAO_GERAL                        49
+APROVADO_AGUARDANDO_CONFIRMACAO_DE_NUMERACAO       48
+PENDENTE_POS_AS_BUILT                              30
+CORRIGIDO_POS_AUDITORIA                            26
+CORRIGIDO_AS_BUILT                                 23
+PENDENTE_POS_AUDITORIA                             22
+CORRIGIDO_CORRECAO_DOCUMENTACAO                    19
+
+== NUM_ULTIMO_ALVARA n_unique 44184
+NUM_ULTIMO_ALVARA
+NaN           38230
+196800137       674
+1968000137      181
+197601006        57
+197300683        29
+196801300        18
+197200396        12
+197400658        11
+198000628         9
+197300966         9
+196701240         8
+196800136         7
+
+== DT_EMISSAO_ALVARA_CONSTRUCAO n_unique 30034
+DT_EMISSAO_ALVARA_CONSTRUCAO
+NaN                    38230
+2026-06-16 07:08:08      674
+2026-04-16 08:52:34      181
+2026-10-27 07:34:20       57
+1993-11-22 00:00:00       44
+2010-08-24 00:00:00       41
+2010-08-26 00:00:00       36
+2010-09-08 00:00:00       34
+2001-05-07 00:00:00       29
+2010-08-19 00:00:00       29
+2023-09-01 14:19:54       29
+2010-06-29 00:00:00       26
+
+== DT_CONCESSAO_ULTIMO_ALVARA n_unique 23114
+DT_CONCESSAO_ULTIMO_ALVARA
+NaN                    38230
+1968-12-03 00:00:00      865
+1976-04-29 00:00:00       62
+2010-08-20 00:00:00       30
+2010-08-02 00:00:00       29
+1973-06-13 00:00:00       29
+2010-08-05 00:00:00       28
+2010-09-01 00:00:00       26
+2010-08-24 00:00:00       25
+2010-04-13 00:00:00       24
+2010-08-03 00:00:00       24
+2009-04-01 00:00:00       23
+
+== DT_VALIDADE_ULTIMO_ALVARA n_unique 23559
+DT_VALIDADE_ULTIMO_ALVARA
+NaN                    38230
+2027-11-04 00:00:00      732
+1968-12-16 00:00:00      674
+2026-09-19 00:00:00      505
+2030-09-19 00:00:00      258
+2000-12-26 00:00:00      190
+1999-06-26 00:00:00      186
+1968-12-03 00:00:00      184
+2013-05-24 00:00:00      105
+2024-02-05 00:00:00      100
+2002-06-26 00:00:00       95
+1978-04-18 00:00:00       57
+
+== DATA_COMUNICADO_INICIO_OBRA n_unique 2669
+DATA_COMUNICADO_INICIO_OBRA
+NaN                    78511
+2023-10-27 00:00:00       25
+2024-10-01 00:00:00       18
+2025-02-03 00:00:00       17
+2022-09-01 00:00:00       16
+2022-06-01 00:00:00       14
+2023-08-01 00:00:00       13
+2025-06-02 00:00:00       12
+2023-06-14 00:00:00       12
+2026-01-05 00:00:00       12
+2026-06-01 00:00:00       12
+2023-03-01 00:00:00       12
+
+== DATA_ULTIMA_BAIXA n_unique 22513
+DATA_ULTIMA_BAIXA
+NaN                    40225
+1974-08-22 12:00:00      869
+1980-05-06 12:00:00      575
+1982-04-30 12:00:00      508
+1976-01-07 12:00:00      300
+1981-01-23 11:00:00      240
+1977-02-28 12:00:00      175
+1983-08-03 12:00:00      166
+1979-02-14 12:00:00      161
+1978-06-26 12:00:00      148
+1975-10-16 12:00:00      136
+1973-11-23 12:00:00      136
+
+== TIPO_ULTIMA_BAIXA n_unique 3
+TIPO_ULTIMA_BAIXA
+BAIXA TOTAL      44306
+NaN              40415
+BAIXA PARCIAL      622
+
+== ENDERECO n_unique 55720
+ENDERECO
+NaN                                     24589
+RUA FRANCISCO DESLANDES, 19                 6
+AVE AMAZONAS, 1725                          6
+RUA GOIANIA, 338                            5
+RUA JAMIL FARAH, 504                        5
+AVE DOS BANDEIRANTES, 2323                  5
+AVE SENADOR JOSE AUGUSTO, 80                5
+RUA ZILAH CORREA DE ARAUJO, 461             5
+RUA PROFESSOR MAGALHAES DRUMOND, 157        5
+RUA SOUZA MENEZES, 105, 121                 5
+RUA DONA CECILIA, 139                       5
+RUA PAULO AFONSO, 486                       5
+
+== LOTE_PROJETO n_unique 73472
+LOTE_PROJETO
+Zona Fiscal 453 Quarteirão 007  Lote(s) 004,006,007,008,009,010,011,012,013,014,015,016    56
+Zona Fiscal 947 Quarteirão 109  Lote(s) 014A,015A,016A,017A,018A,019A,020A,021A,022A       31
+Zona Fiscal 971 Quarteirão 062  Lote(s) 001,002,003,004,005,006,015,016,017                25
+Zona Fiscal 170 Quarteirão 118  Lote(s) 008,009                                            20
+Zona Fiscal 278 Quarteirão 026  Lote(s) 007,008                                            17
+Zona Fiscal 492 Quarteirão 103A Lote(s) 004,005                                            15
+Zona Fiscal 102 Quarteirão 007H Lote(s) 001C,001R,002C,011Y                                13
+Zona Fiscal 108 Quarteirão 048  Lote(s) 001,002,003,004,005,029,030                        13
+Zona Fiscal 113 Quarteirão 135  Lote(s) 024,026,028                                        12
+Zona Fiscal 009 Quarteirão 030  Lote(s) 001B                                               12
+Zona Fiscal 113 Quarteirão 092  Lote(s) 009,011,013                                        10
+Zona Fiscal 003 Quarteirão 012  Lote(s) 004,005,006,007                                    10
+
+== USO_GERAL n_unique 5
+USO_GERAL
+RESIDENCIAL                              65677
+NÃO RESIDENCIAL                          12228
+MISTO                                     5198
+USO INVÁLIDO: PROJETO MIGRADO EM 2013     1931
+NaN                                        309
+
+== QTD_UND_RESIDENCIAL n_unique 273
+QTD_UND_RESIDENCIAL
+0     39062
+1     21079
+2      4620
+6      3155
+8      2353
+4      2036
+3      1819
+12     1019
+5       945
+10      866
+16      779
+7       738
+
+== QTD_UND_NAO_RESIDENCIAL n_unique 224
+QTD_UND_NAO_RESIDENCIAL
+0     72438
+1      6811
+2      1500
+3       721
+4       632
+5       384
+6       283
+7       219
+8       208
+9       167
+10      165
+12      118
+
+== AREA_CONSTRUIDA n_unique 36966
+AREA_CONSTRUIDA
+0.0      30066
+27.0       645
+48.0       467
+39.0       313
+60.0       226
+49.15      216
+40.32      205
+45.0       171
+54.5       166
+47.95      138
+61.0       132
+70.0       129
+
+== TIPO_APROVACAO n_unique 3
+TIPO_APROVACAO
+Convencional      45146
+NaN               36535
+Alvara na Hora     3662
+
+== DATA_APROVACAO n_unique 16534
+DATA_APROVACAO
+NaN           2090
+29-04-1976    1442
+03-12-1968     884
+14-03-1980     604
+24-10-1968     567
+02-05-1975     417
+04-12-1980     251
+07-01-1976     246
+07-11-1968     197
+06-06-1977     171
+04-07-1975     157
+07-06-1977     154
+
+== AREA_LIQUIDA n_unique 45624
+AREA_LIQUIDA
+0.0      18871
+103.0      231
+48.05      221
+86.4       195
+61.65      165
+49.0       163
+71.58      159
+39.0       157
+34.14      147
+63.64      137
+39.36      128
+60.0        75
+
+== QTDE_PAVIMENTOS n_unique 130
+QTDE_PAVIMENTOS
+1     17561
+2     17524
+3     12773
+4      8396
+5      5614
+0      4732
+6      4626
+7      3001
+8      2122
+9      1338
+10     1106
+11      927
+
+## datas DT_EMISSAO_ALVARA_CONSTRUCAO ['2017-03-02 10:31:17', '2025-07-10 10:46:17', '2017-04-20 15:28:07', '1995-01-02 00:00:00', '2026-04-19 09:24:32', '2012-12-20 00:00:00', '2026-02-03 10:43:54', '2025-09-01 10:03:55']
+
+## datas DT_CONCESSAO_ULTIMO_ALVARA ['2016-02-15 09:54:14', '1949-04-25 00:00:00', '2014-05-23 15:39:37', '1994-12-16 00:00:00', '1997-02-04 00:00:00', '2008-10-01 00:00:00', '1972-01-28 00:00:00', '2022-10-17 11:03:55']
+
+## datas DT_VALIDADE_ULTIMO_ALVARA ['2020-02-15 09:54:14', '1950-05-06 00:00:00', '2018-05-23 15:39:37', '1999-06-16 00:00:00', '1999-06-26 00:00:00', '2017-10-01 00:00:00', '1973-11-10 00:00:00', '2026-10-17 11:03:55']
+
+## datas DATA_COMUNICADO_INICIO_OBRA ['2020-07-17 00:00:00', '2020-05-15 00:00:00', '2020-09-09 00:00:00', '2018-01-23 00:00:00', '2025-02-05 00:00:00', '2017-05-11 00:00:00', '2022-01-10 00:00:00', '2021-08-02 00:00:00']
+
+## datas DATA_ULTIMA_BAIXA ['1978-09-25 12:00:00', '1955-07-22 12:00:00', '1990-10-16 14:21:27', '2025-05-12 12:00:00', '1969-06-04 14:39:30', '1941-06-04 12:00:00', '1984-12-17 00:00:00', '2025-10-01 12:00:00']
+
+## datas DATA_APROVACAO ['16-11-2010', '10-06-1997', '19-07-1989', '29-07-2008', '08-02-2008', '17-05-1994', '24-07-2023', '09-09-1974']
