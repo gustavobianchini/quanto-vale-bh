@@ -486,7 +486,6 @@ async function bairro(b){out.innerHTML='<p class="st">Carregando bairro…</p>';
 
 /* ---------- Termômetro do mercado ---------- */
 let MER=null,NOT=null,MST={per:'5a'},MKRO=[];
-const RAW_NOT='https://raw.githubusercontent.com/gustavobianchini/quanto-vale-bh/main/dados/noticias.json';
 const nf=v=>v==null?'—':Math.round(v).toLocaleString('pt-BR');
 const pcs=(v,d=1)=>v==null?'—':(v>0?'+':v<0?'−':'')+Math.abs(v*100).toLocaleString('pt-BR',{maximumFractionDigits:d,minimumFractionDigits:d})+'%';
 const pc0=v=>v==null?'—':(v*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%';
@@ -618,7 +617,7 @@ async function mercado(){out.innerHTML='<p class="st">Carregando o termômetro�
     tick:(x,i)=>(oa.length>12&&i%2&&i!==oa.length-1)?null:"'"+x.slice(2)+(x===anoF?'*':''),
     dica:i=>{const x=oa[i];return`<b>${x[0]}${String(x[0])===anoF?' (até '+MESN[+fim.slice(5,7)-1]+')':''}</b><br>aprovadas: ${nf(x[1])}<br>obras iniciadas: ${x[0]>=O.inicio_desde?nf(x[2]):'—'}<br>entregues: ${nf(x[3])}`}})}
   // notícias (atualizadas todo dia no repositório; cópia do site como reserva)
-  if(!NOT){for(const u of[RAW_NOT,'data/noticias.json']){try{const r=await fetch(u,{cache:'no-cache'});if(r.ok){NOT=await r.json();break}}catch{}}}
+  if(!NOT){try{const r=await fetch('data/noticias.json',{cache:'no-cache'});if(r.ok)NOT=await r.json()}catch{}}
   const nl=$('#nl');if(!nl)return;
   if(!NOT?.itens?.length){nl.innerHTML='<li class="st">Sem notícias no momento.</li>';return}
   nl.innerHTML=NOT.itens.slice(0,10).map(x=>`<li><a href="${esc(x.u)}" target="_blank" rel="noopener">${esc(x.t)}</a><span>${dataBR(x.d)} · ${esc(x.f)}${x.l?' <b class="tg">lançamento</b>':''}</span></li>`).join('');

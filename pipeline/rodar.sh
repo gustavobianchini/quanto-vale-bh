@@ -15,6 +15,7 @@ if [[ "${1:-}" != "--sem-baixar" ]]; then
   echo "== 1/7 Baixando dados públicos"; python pipeline/baixar.py "$B"
 fi
 [[ -f "$B/econ.json" ]] || cp dados/econ.json "$B/econ.json"
+if [[ "${1:-}" == "--sem-baixar" ]]; then python pipeline/baixar.py noticias dados/noticias.json || echo "AVISO: notícias indisponíveis"; fi
 
 echo "== 2/7 Consolidando ITBI";        python pipeline/consolidar.py "$B/itbi" "$W/itbi_bh.csv"
 echo "== 3/7 Conferindo a base";        python pipeline/validar.py "$W/itbi_bh.csv"

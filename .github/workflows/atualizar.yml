@@ -4,6 +4,8 @@ on:
   schedule:
     # dias 10 e 20 de cada mês, 07:00 em Brasília (10:00 UTC); a PBH publica o mês anterior no início do mês
     - cron: "0 10 10,20 * *"
+    # todo dia, 07:23: só atualiza as notícias e republica o site com os dados já baixados (~5 min)
+    - cron: "23 10 * * *"
   workflow_dispatch: {}
   push:
     branches: [main]
@@ -40,7 +42,12 @@ jobs:
           restore-keys: brutos-
 
       - name: Baixar, conferir e recalcular
-        run: bash pipeline/rodar.sh
+        run: |
+          if [ "${{ github.event.schedule }}" = "23 10 * * *" ] && compgen -G "dados/brutos/itbi/*.csv" > /dev/null; then
+            bash pipeline/rodar.sh --sem-baixar      # rotina diária: só notícias novas
+          else
+            bash pipeline/rodar.sh
+          fi
 
       # registra o resumo da atualização no repositório: mantém o histórico e impede que o GitHub
       # desligue a rotina agendada (ele desliga após 60 dias sem alterações em repositórios públicos)
