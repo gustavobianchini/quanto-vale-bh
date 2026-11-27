@@ -80,7 +80,8 @@ select{font:inherit;font-size:16px;min-height:44px;padding:6px 10px;border:2px s
 .ovl{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:center;font-size:14px;margin:0 0 4px}.ovl span{color:var(--mut)}
 .ovl label{display:flex;gap:6px;align-items:center;min-height:40px;cursor:pointer}.ovl input{width:18px;height:18px;accent-color:#111}
 .sw{display:inline-block;width:18px;height:3px;background:var(--c)}
-.leg .ln{display:inline-block;width:16px;height:2px;background:var(--ink);opacity:.45;vertical-align:4px;margin-right:4px}
+.leg .ln{display:inline-block;width:16px;height:2px;background:var(--ink);opacity:.45;vertical-align:4px;margin-right:4px}.leg .ln.f{height:3px;opacity:1}
+h3.rk{margin:26px 0 10px}
 .sumtx{display:block;margin-top:6px;color:var(--ink);font-size:14px}
 .rank td.w{width:22%;min-width:90px}.hb{display:block;height:10px;background:var(--ink);opacity:.8}
 .rank tr:first-child .hb{background:var(--hi);opacity:1;outline:1px solid var(--ink)}
@@ -138,6 +139,7 @@ const med=a=>{if(!a.length)return null;const s=[...a].sort((x,y)=>x-y),m=s.lengt
 const FU0=0.6;
 const ECON=__ECON__;
 let OVL={ipca:false,cdi:false,usd:false};try{Object.assign(OVL,JSON.parse(localStorage.getItem('itbi_ovl')||'{}'))}catch{}
+let SST='num';
 let IDX=[],cache=new Map(),pcache=new Map(),cur=null,sel=-1,sortK='d',sortDir=-1,resOnly=true,unitF='';
 
 function parseQ(t){let w=norm(t).split(' ').filter(Boolean),num='';
@@ -191,13 +193,29 @@ function street(miss){const{lg,rows}=cur;const g=new Map();
   const last=rows.reduce((a,r)=>r.d>a?r.d:a,'');const cut=String(+last.slice(0,4)-2)+last.slice(4);
   const L=[...g].map(([k,rs])=>{const rec2=rs.filter(r=>r.d>=cut&&r.m2&&r.tp==='AP'&&!(r.div>=.2));return{k,n:rs.length,last:rs.reduce((a,r)=>r.d>a?r.d:a,''),bai:rs[0].bai,ano:rs.find(r=>r.ano)?.ano||'',m2:med(rec2.map(r=>r.m2)),nr:rec2.length}})
   ;const pre=lg+'|';for(const[key,P]of cur.pm)if(key.startsWith(pre)){const k=key.slice(pre.length)||'s/n';const x=L.find(y=>y.k===k);if(x)x.P=P;else if(P.ap)L.push({k,n:0,last:'',bai:P.bai||'',ano:P.ano||'',m2:null,nr:0,P})}
-  L.sort((a,b)=>(parseInt(a.k)||1e9)-(parseInt(b.k)||1e9));const hasP=L.some(x=>x.P);
-  out.innerHTML=`<div class="res"><div class="head"><div><h2>${esc(lg)}</h2><p>${L.length} números com negócios${resOnly?' residenciais':''} · ${rows.length.toLocaleString('pt-BR')} registros no total${miss?` · o número ${esc(miss)} não aparece na base`:''}</p></div>
-  <div class="bar"><label><input type="checkbox" id="ro" ${resOnly?'checked':''}> Só residencial</label></div></div>
+  const byNum=(a,b)=>(parseInt(a.k)||1e9)-(parseInt(b.k)||1e9);
+  if(SST==='neg')L.sort((a,b)=>b.n-a.n||byNum(a,b));else if(SST==='m2')L.sort((a,b)=>(b.m2??-1)-(a.m2??-1)||byNum(a,b));else L.sort(byNum);
+  const hasP=L.some(x=>x.P);
+  // curva da rua: apartamentos residenciais, R$/m² útil com o fator de cada prédio
+  const V=[];for(const r of rows){if(r.tp!=='AP'||r.oc!=='R'||!(r.ac>=20)||!r.vd||r.div>=.2)continue;const mu=r.vd/(r.ac*(cur.pm.get(lg+'|'+r.num)?.fu||FU0));
+    if(mu>=700&&mu<=60000)V.push({...r,mu,comp:(r.num||'s/n')+(r.comp?' · '+r.comp:'')})}
+  const S=serieFE(V.map(x=>({b:x.num,a:x.d.slice(0,4),mu:x.mu,d:x.d})),3,1);
+  const v24=V.filter(r=>r.d>=cut),g24=new Map();for(const r of v24){if(!g24.has(r.num))g24.set(r.num,[]);g24.get(r.num).push(r.mu)}
+  const pm24=med([...g24.values()].map(med)),nPred=g24.size;
+  out.innerHTML=`<div class="res"><div class="head"><div><h2>${esc(lg)}</h2><p>${L.length} números com negócios${resOnly?' residenciais':''} · ${rows.length.toLocaleString('pt-BR')} registros no total${miss?` · o número ${esc(miss)} não aparece na base`:''}</p></div></div>
+  <div class="kpis"><div class="kpi on"><span>R$/m² útil ≈, últimos 24 meses</span><b>${pm24?brl(pm24):'—'}</b><em>mediana entre ${nPred} ${nPred===1?'prédio':'prédios'} com vendas de apartamento</em></div>
+  <div class="kpi"><span>Vendas de apartamento, 24 meses</span><b>${v24.length}</b><em>${V.length} desde 2008</em></div>
+  ${kpiVal(S,5)}${kpiVal(S,10)}</div>
+  ${S.length>1?figHTML('Preço do m² útil na rua ao longo do tempo, com comparações opcionais'):''}
+  <h3 class="rk">Prédios da rua</h3>
+  <div class="bar"><div class="seg" role="group" aria-label="Ordenar prédios"><button class="${SST==='num'?'on':''}" data-o="num">Por número</button><button class="${SST==='neg'?'on':''}" data-o="neg">Mais negociados</button><button class="${SST==='m2'?'on':''}" data-o="m2">Mais caros</button></div>
+  <label><input type="checkbox" id="ro" ${resOnly?'checked':''}> Só residencial</label></div>
   <div class="scroll"><table class="stack"><thead><tr><th>Número</th><th>Bairro</th><th class="n">Ano constr.</th><th class="n">Negócios</th><th class="n">Último</th><th class="n">R$/m² útil ≈ (24 meses)</th>${hasP?'<th class="n">R$/m² útil estimado hoje</th>':''}</tr></thead><tbody>
   ${L.map(x=>`<tr class="click" data-k="${esc(x.k)}"><td><b>${esc(x.k)}</b></td><td>${esc(x.bai)}</td><td class="n">${esc(x.ano)}</td><td class="n">${x.n}</td><td class="n">${dt(x.last)}</td><td class="n">${x.m2?brl(x.m2/(cur.pm.get(lg+'|'+x.k)?.fu||FU0))+` <span class="note">(${x.nr})</span>`:'—'}</td>${hasP?`<td class="n">${x.P?'<b>'+brl(x.P.m2/(x.P.fu||FU0))+'</b>':'—'}</td>`:''}</tr>`).join('')}
-  </tbody></table></div><p class="note">Clique num número para ver todas as transações dele${hasP?' e a estimativa de valor por tamanho de unidade':''}.</p></div>`;
+  </tbody></table></div><p class="note">Clique num número para ver todas as transações dele${hasP?' e a estimativa de valor por tamanho de unidade':''}. "Mais caros" ordena pelo R$/m² útil das vendas dos últimos 24 meses (entre parênteses, quantas vendas).${S.length>1?' A linha do gráfico mostra o preço de um prédio típico da rua a cada ano, comparando os mesmos prédios entre anos (um lançamento caro não puxa a curva); só entram anos com 3+ vendas. Valores declarados, sem correção.':''}</p></div>`;
   $('#ro').onchange=ev=>{resOnly=ev.target.checked;street(miss)};
+  out.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{SST=b.dataset.o;street(miss)});
+  if(S.length>1){const draw=()=>chart(V,{yrs:S,leg:'prédio típico da rua, ano a ano',tit:'Prédio típico da rua',obj:'a rua'});ligarOvl(draw);draw()}
   out.querySelectorAll('tr.click').forEach(tr=>tr.onclick=()=>{const k=tr.dataset.k;q.value=lg+(k==='s/n'?'':' '+k);building(k==='s/n'?'':k)})}
 
 const CONF={alta:'confiança alta',boa:'confiança boa',media:'confiança média',baixa:'confiança baixa'};
@@ -267,14 +285,7 @@ function building(num){const{lg}=cur;const P=cur.pm.get(lg+'|'+num);const fu=P?.
   <div class="kpi"><span>R$/m² útil mediano, desde 2008</span><b>${m2a?brl(m2a):'—'}</b><em>${res.length} vendas, sem correção${nx?` · ${nx} fora (declarado muito abaixo da avaliação da PBH)`:''}</em></div>
   <div class="kpi"><span>Negócios registrados</span><b>${all.length}</b><em>${dt(all.reduce((a,r)=>!a||r.d<a?r.d:a,''))} a ${dt(all.reduce((a,r)=>r.d>a?r.d:a,''))}</em></div>
   <div class="kpi"><span>Área útil mediana (aprox.)</span><b>${ar?Math.round(ar)+' m²':'—'}</b><em>${esc(fuTxt)}</em></div></div>
-  <div class="fig" id="fig"><svg id="ch" role="img" aria-label="R$ por m² útil de cada venda ao longo do tempo, com comparações opcionais"></svg></div>
-  <div class="ovl" role="group" aria-label="Comparar com">
-    <span>Comparar com:</span>
-    <label><input type="checkbox" data-o="ipca" ${OVL.ipca?'checked':''}><i class="sw" style="--c:var(--c-ipca)"></i>IPCA</label>
-    <label><input type="checkbox" data-o="cdi" ${OVL.cdi?'checked':''}><i class="sw" style="--c:var(--c-cdi)"></i>CDI</label>
-    <label><input type="checkbox" data-o="usd" ${OVL.usd?'checked':''}><i class="sw" style="--c:var(--c-usd)"></i>m² em dólar</label>
-  </div>
-  <p class="leg" id="leg"></p>
+  ${figHTML('R$ por m² útil de cada venda ao longo do tempo, com comparações opcionais')}
   <div class="bar"><label><input type="checkbox" id="ro" ${resOnly?'checked':''}> Só residencial</label><input type="text" id="uf" placeholder="Filtrar unidade (ex.: 501)" value="${esc(unitF)}" aria-label="Filtrar unidade"><span class="sp"></span><button class="g" id="cp">Copiar tabela</button></div>
   <div class="scroll"><table class="stack" id="tb"><thead><tr><th data-s="d">Data</th><th data-s="comp">Unidade</th><th data-s="tp">Tipo</th><th data-s="au" class="n">Área útil ≈</th><th data-s="vd" class="n">Valor declarado</th><th data-s="mu" class="n">R$/m² útil ≈</th></tr></thead><tbody>
   ${rows.map(r=>`<tr><td class="n">${dt(r.d)}</td><td>${esc(r.comp)||'—'}${r.vagas?`<br><span class="note">+ ${esc(r.vagas.join(', '))}</span>`:''}</td><td><span class="tag">${esc(TIPO[r.tp]||r.tp)}</span></td><td class="n">${r.au?Math.round(r.au)+' m²':'—'}</td><td class="n">${brl(r.vd)}${r.div!=null&&r.div>=.2?`<br><span class="flag">PBH avaliou ${Math.round(r.div*100)}% acima</span>`:''}</td><td class="n">${r.mu?brl(r.mu):'—'}</td></tr>`).join('')||'<tr><td colspan="6">Nenhuma transação com esses filtros.</td></tr>'}
@@ -284,7 +295,7 @@ function building(num){const{lg}=cur;const P=cur.pm.get(lg+'|'+num);const fu=P?.
   $('#back').onclick=()=>{q.value=lg;street()};
   $('#ro').onchange=ev=>{resOnly=ev.target.checked;building(num)};
   const uf=$('#uf');uf.oninput=()=>{unitF=uf.value;const p=uf.selectionStart;building(num);const u=$('#uf');u.focus();u.setSelectionRange(p,p)};
-  out.querySelectorAll('.ovl input').forEach(c=>c.onchange=()=>{OVL[c.dataset.o]=c.checked;try{localStorage.setItem('itbi_ovl',JSON.stringify(OVL))}catch{}chart(resAll)});
+  ligarOvl(()=>chart(resAll));
   $('#cp').onclick=async ev=>{const t=[['Data','Unidade','Tipo','Area util aprox m2','Valor declarado','R$/m2 util aprox'].join('\t'),...rows.map(r=>[dt(r.d),r.comp,r.tp,r.au?Math.round(r.au):'',r.vd,r.mu?Math.round(r.mu):''].join('\t'))].join('\n');
     try{await navigator.clipboard.writeText(t);ev.target.textContent='Copiado ✓'}catch{ev.target.textContent='Não foi possível copiar'}};
   chart(resAll)}
@@ -294,10 +305,37 @@ const EI=new Map(ECON.m.map((m,i)=>[m,i]));
 function acum(serie,m0,m1){const a=EI.get(m0),b=EI.get(m1);if(a==null||b==null)return null;let f=1;for(let i=a+1;i<=b;i++)f*=1+ECON[serie][i]/100;return f}
 const mes=d=>d.slice(0,7);
 let ro=null;
-function chart(pts){const s=$('#ch');if(!s)return;if(ro)ro.disconnect();
+const figHTML=lbl=>`<div class="fig" id="fig"><svg id="ch" role="img" aria-label="${esc(lbl)}"></svg></div>
+  <div class="ovl" role="group" aria-label="Comparar com">
+    <span>Comparar com:</span>
+    <label><input type="checkbox" data-o="ipca" ${OVL.ipca?'checked':''}><i class="sw" style="--c:var(--c-ipca)"></i>IPCA</label>
+    <label><input type="checkbox" data-o="cdi" ${OVL.cdi?'checked':''}><i class="sw" style="--c:var(--c-cdi)"></i>CDI</label>
+    <label><input type="checkbox" data-o="usd" ${OVL.usd?'checked':''}><i class="sw" style="--c:var(--c-usd)"></i>m² em dólar</label>
+  </div>
+  <p class="leg" id="leg"></p>`;
+function ligarOvl(redraw){out.querySelectorAll('.ovl input').forEach(c=>c.onchange=()=>{OVL[c.dataset.o]=c.checked;try{localStorage.setItem('itbi_ovl',JSON.stringify(OVL))}catch{}redraw()})}
+/* preço ano a ano de um prédio típico (efeito fixo de prédio + ano): compara os mesmos prédios entre anos,
+   para um lançamento ou um prédio caro vendido num ano não distorcer a curva. L: [{b,a,mu,d}] → [[ano,mes,R$/m²,n]] */
+function serieFE(L,minN,minB){const c=new Map();for(const x of L){const e=c.get(x.a)||{n:0,b:new Set()};e.n++;e.b.add(x.b);c.set(x.a,e)}
+  const ti=[...c].filter(([,e])=>e.n>=minN&&e.b.size>=minB).map(([a])=>a).sort();if(ti.length<2)return[];
+  const tix=new Map(ti.map((a,i)=>[a,i])),D=L.filter(x=>tix.has(x.a)),bi=new Map();
+  const B=D.map(x=>{if(!bi.has(x.b))bi.set(x.b,bi.size);return bi.get(x.b)}),T=D.map(x=>tix.get(x.a)),Y=D.map(x=>Math.log(x.mu));
+  const fb=new Float64Array(bi.size),ft=new Float64Array(ti.length),nb=new Float64Array(bi.size),nt=new Float64Array(ti.length);
+  B.forEach(b=>nb[b]++);T.forEach(t=>nt[t]++);
+  for(let it=0;it<60;it++){fb.fill(0);for(let i=0;i<D.length;i++)fb[B[i]]+=Y[i]-ft[T[i]];for(let k=0;k<fb.length;k++)fb[k]/=nb[k];
+    ft.fill(0);for(let i=0;i<D.length;i++)ft[T[i]]+=Y[i]-fb[B[i]];for(let k=0;k<ft.length;k++)ft[k]/=nt[k]}
+  const fim=D.reduce((a,x)=>x.d>a?x.d:a,''),f24=String(+fim.slice(0,4)-2)+fim.slice(4),rc=new Set();D.forEach((x,i)=>{if(x.d>f24)rc.add(B[i])});
+  const base=med([...(rc.size?rc:new Set(bi.values()))].map(b=>fb[b])),lm=+fim.slice(5,7);
+  return ti.map((a,k)=>[a,a+'-'+(a!==fim.slice(0,4)?'07':String((1+lm)>>1).padStart(2,'0')),Math.round(Math.exp(base+ft[k])),nt[k]])}
+const v5=(S,k=5)=>{if(!S||S.length<2)return null;const a1=S[S.length-1],a0=S.find(x=>+x[0]===+a1[0]-k);return a0?{v:a1[2]/a0[2]-1,de:a0,ate:a1}:null};
+const kpiVal=(S,k)=>{const vv=v5(S,k),pc=v=>(v>0?'+':'')+Math.round(v*100)+'%';
+  return`<div class="kpi"><span>Valorização em ${k} anos</span><b>${vv?pc(vv.v):'—'}</b><em>${vv?`${vv.de[0]} a ${vv.ate[0]} · IPCA ${pc(ipcaEntre(vv.de[1],vv.ate[1])-1)}`:'poucas vendas para medir'}</em></div>`};
+const ipcaEntre=(m0,m1)=>{const L=ECON.m[ECON.m.length-1];return acum('ipca',m0,m1>L?L:m1)};
+/* opt.yrs: curva pronta [[ano,mes,v,n]] (rua/bairro); sem ela, mediana anual das vendas (prédio) */
+function chart(pts,opt={}){const s=$('#ch');if(!s)return;if(ro)ro.disconnect();
   const ok=pts.filter(r=>!(r.div>=.2));
   const by=new Map();for(const r of ok){const a=r.d.slice(0,4);if(!by.has(a))by.set(a,[]);by.get(a).push(r.mu)}
-  const yrs=[...by].sort((a,b)=>a[0]<b[0]?-1:1).map(([a,v])=>({a,v:med(v),n:v.length,m:a+'-07'}));
+  const yrs=opt.yrs?opt.yrs.map(([a,m,v,n])=>({a,m,v,n})):[...by].sort((a,b)=>a[0]<b[0]?-1:1).map(([a,v])=>({a,v:med(v),n:v.length,m:a+'-07'}));
   const lastM=ECON.m[ECON.m.length-1];
   yrs.forEach(y=>{if(y.m>lastM)y.m=lastM});
   const base=yrs[0];
@@ -308,21 +346,21 @@ function chart(pts){const s=$('#ch');if(!s)return;if(ro)ro.disconnect();
     if(OVL.cdi)ser.push({k:'cdi',c:'var(--c-cdi)',pts:ms.filter((m,i)=>i%3===0||m===lastM).map(m=>[m,base.v*acum('cdi',m0,m)])});
     if(OVL.usd){const fx0=ECON.usd[EI.get(m0)];ser.push({k:'usd',c:'var(--c-usd)',dots:1,pts:yrs.map(y=>[y.m,y.v*fx0/ECON.usd[EI.get(y.m)]])})}
   }
-  const legP=[`<i style="background:var(--ink)"></i>venda (R$/m² útil)`,`<i style="background:var(--warn)"></i>PBH avaliou 20%+ acima do declarado (fora das medianas)`,`<b class="ln"></b>mediana do ano`];
+  const legP=opt.yrs?[...(pts.length?[`<i style="background:var(--ink);opacity:.35"></i>venda (R$/m² útil)`]:[]),`<b class="ln f"></b>${opt.leg}`]:[`<i style="background:var(--ink)"></i>venda (R$/m² útil)`,`<i style="background:var(--warn)"></i>PBH avaliou 20%+ acima do declarado (fora das medianas)`,`<b class="ln"></b>mediana do ano`];
   if(base&&yrs.length>1){const fim=yrs[yrs.length-1];
     const tx=(f)=>(f>=1?'+':'')+Math.round((f-1)*100)+'%';
     const imv=fim.v/base.v;
-    let t=`Mediana do prédio: ${brl(base.v)} (${base.a}) → ${brl(fim.v)} (${fim.a}), ${tx(imv)}.`;
-    if(OVL.ipca){const f=acum('ipca',base.m,fim.m);t+=` IPCA no período: ${tx(f)}${imv>f?' — o imóvel ganhou da inflação':' — o imóvel perdeu para a inflação'}.`}
+    let t=`${opt.tit||'Mediana do prédio'}: ${brl(base.v)} (${base.a}) → ${brl(fim.v)} (${fim.a}), ${tx(imv)}.`;
+    if(OVL.ipca){const f=acum('ipca',base.m,fim.m);t+=` IPCA no período: ${tx(f)}${imv>f?` — ${opt.obj||'o imóvel'} ganhou da inflação`:` — ${opt.obj||'o imóvel'} perdeu para a inflação`}.`}
     if(OVL.cdi){const f=acum('cdi',base.m,fim.m);t+=` CDI: ${tx(f)}.`}
     if(OVL.usd){const f=ECON.usd[EI.get(base.m)]/ECON.usd[EI.get(fim.m)]*imv;t+=` Em dólar: ${tx(f)} (linha tracejada: o m² em dólar, convertido a reais pelo câmbio de ${base.a}, ou seja, sem o efeito da alta do dólar).`}
     legP.push(`<span class="sumtx">${t}</span>`)}
   else if(OVL.ipca||OVL.cdi||OVL.usd)legP.push('<span class="sumtx">Comparações precisam de vendas em pelo menos dois anos diferentes.</span>');
   $('#leg').innerHTML=legP.join(' &nbsp; ');
   const draw=()=>{const W=s.clientWidth,H=s.clientHeight;if(!W)return;
-    if(!ok.length&&!pts.length){s.innerHTML=`<text x="${W/2}" y="${H/2}" text-anchor="middle" fill="currentColor" font-size="14">Sem vendas residenciais com área informada</text>`;return}
+    if(!pts.length&&!yrs.length){s.innerHTML=`<text x="${W/2}" y="${H/2}" text-anchor="middle" fill="currentColor" font-size="14">Sem vendas residenciais com área informada</text>`;return}
     const t=d=>Date.parse(d.length===7?d+'-15':d);
-    const allY=pts.map(r=>r.mu).concat(ser.flatMap(x=>x.pts.map(p=>p[1]))).sort((a,b)=>a-b);
+    const allY=pts.map(r=>r.mu).concat(yrs.map(y=>y.v),ser.flatMap(x=>x.pts.map(p=>p[1]))).sort((a,b)=>a-b);
     const y1=allY[Math.floor(allY.length*.97)]*1.08||1,y0=0;
     const x0=Date.parse('2008-01-01'),x1=Date.parse('2026-12-01');
     const m={l:W<520?44:62,r:14,t:14,b:28},X=v=>m.l+(v-x0)/(x1-x0)*(W-m.l-m.r),Y=v=>H-m.b-(Math.min(v,y1)-y0)/(y1-y0)*(H-m.t-m.b);
@@ -332,8 +370,10 @@ function chart(pts){const s=$('#ch');if(!s)return;if(ro)ro.disconnect();
     for(const sr of ser){const pp=sr.pts.map(p=>[X(t(p[0])).toFixed(1),Y(p[1]).toFixed(1)]);
       g+=`<polyline points="${pp.map(p=>p.join(',')).join(' ')}" fill="none" stroke="${sr.c}" stroke-width="2.5"${sr.dots?' stroke-dasharray="6 4"':''}/>`;
       if(sr.dots)g+=pp.map(p=>`<rect x="${p[0]-3.5}" y="${p[1]-3.5}" width="7" height="7" fill="${sr.c}"/>`).join('')}
-    if(yrs.length>1)g+=`<polyline points="${yrs.map(y=>X(t(y.m)).toFixed(1)+','+Y(y.v).toFixed(1)).join(' ')}" fill="none" stroke="var(--ink)" stroke-width="2" stroke-opacity=".45"/>`;
-    for(const r of pts){const w=r.div!=null&&r.div>=.2;g+=`<circle cx="${X(t(r.d)).toFixed(1)}" cy="${Y(r.mu).toFixed(1)}" r="4" fill="${w?'var(--warn)':'var(--ink)'}" fill-opacity=".75"><title>${dt(r.d)} · ${esc(r.comp)} · ${brl(r.mu)}/m² útil · ${brl(r.vd)}</title></circle>`}
+    for(const r of pts){const w=r.div!=null&&r.div>=.2;g+=`<circle cx="${X(t(r.d)).toFixed(1)}" cy="${Y(r.mu).toFixed(1)}" r="4" fill="${w?'var(--warn)':'var(--ink)'}" fill-opacity="${opt.yrs?.3:.75}"><title>${dt(r.d)} · ${esc(r.comp)} · ${brl(r.mu)}/m² útil · ${brl(r.vd)}</title></circle>`}
+    if(yrs.length>1){const pp=yrs.map(y=>[X(t(y.m)).toFixed(1),Y(y.v).toFixed(1)]);
+      g+=`<polyline points="${pp.map(p=>p.join(',')).join(' ')}" fill="none" stroke="var(--ink)" stroke-width="${opt.yrs?3:2}" stroke-opacity="${opt.yrs?1:.45}"/>`;
+      if(opt.yrs)g+=yrs.map((y,i)=>`<circle cx="${pp[i][0]}" cy="${pp[i][1]}" r="4.5" fill="var(--bg)" stroke="var(--ink)" stroke-width="2"><title>${y.a}: ${brl(y.v)}/m² útil · ${y.n} ${y.n===1?'venda':'vendas'}</title></circle>`).join('')}
     s.innerHTML=g};
   ro=new ResizeObserver(draw);ro.observe(s);draw()}
 
@@ -346,37 +386,67 @@ const titleCase=s=>s.toLowerCase().replace(/(^|\s)(\S)/g,(m,a,b)=>a+b.toUpperCas
 async function bairros(){out.innerHTML='<p class="st">Carregando bairros…</p>';
   try{if(!BAI){const r=await fetch('data/bairros.json');BAI=await r.json()}}catch(e){out.innerHTML='<p class="st">Não consegui carregar os bairros. Recarregue a página.</p>';return}
   const M=BAI.meta,D=BAI.dados[BST.per]||{};
-  let L=Object.entries(D).map(([b,v])=>({b,neg:v[0],ap:v[1],m2:v[2],np:v[3],tk:v[4],nv:v[5]}));
+  const VAL=BAI.val5||{};
+  let L=Object.entries(D).map(([b,v])=>({b,neg:v[0],ap:v[1],m2:v[2],np:v[3],tk:v[4],nv:v[5],val:VAL[b]??null}));
   if(BST.f)L=L.filter(x=>norm(x.b).includes(norm(BST.f)));
-  if(BST.ord==='m2')L=L.filter(x=>x.m2&&x.np>=5).sort((a,b)=>b.m2-a.m2);else L.sort((a,b)=>b.neg-a.neg);
-  const mx=Math.max(1,...L.map(x=>BST.ord==='m2'?x.m2:x.neg));
+  const met=x=>BST.ord==='m2'?x.m2:BST.ord==='val'?x.val:x.neg;
+  if(BST.ord==='m2')L=L.filter(x=>x.m2&&x.np>=5).sort((a,b)=>b.m2-a.m2);else if(BST.ord==='val')L=L.filter(x=>x.val!=null).sort((a,b)=>b.val-a.val);else L.sort((a,b)=>b.neg-a.neg);
+  const mx=Math.max(1e-9,...L.map(x=>met(x)||0));
+  const ipV=M.val_de?ipcaEntre(M.val_de,M.val_ate):null,pc=v=>v==null?'—':(v>0?'+':'')+Math.round(v*100)+'%';
   const per=BST.per==='12m'?`${dt(M.ini12)} a ${dt(M.fim)}`:BST.per==='24m'?`${dt(M.ini24)} a ${dt(M.fim)}`:BST.per;
   const yrs=M.periodos.filter(p=>/^\d{4}$/.test(p)).sort().reverse();
   const tot=Object.values(D).reduce((a,v)=>a+v[0],0);
   out.innerHTML=`<div class="res"><div class="head"><div><h2>Ranking de bairros</h2><p>${per} · ${tot.toLocaleString('pt-BR')} negócios residenciais em ${Object.keys(D).length} bairros de BH</p></div></div>
   <div class="bar">
     <label>Período <select id="bp">${['12m','24m',...yrs].map(p=>`<option value="${p}"${p===BST.per?' selected':''}>${PERN[p]||p}</option>`).join('')}</select></label>
-    <div class="seg" role="group" aria-label="Ordenar"><button class="${BST.ord==='neg'?'on':''}" data-o="neg">Mais negociados</button><button class="${BST.ord==='m2'?'on':''}" data-o="m2">Mais caros</button></div>
+    <div class="seg" role="group" aria-label="Ordenar"><button class="${BST.ord==='neg'?'on':''}" data-o="neg">Mais negociados</button><button class="${BST.ord==='m2'?'on':''}" data-o="m2">Mais caros</button><button class="${BST.ord==='val'?'on':''}" data-o="val">Mais valorizados</button></div>
     <input type="text" id="bf" placeholder="Filtrar bairro" value="${esc(BST.f)}" aria-label="Filtrar bairro">
   </div>
-  <div class="scroll"><table class="stack rank"><thead><tr><th class="n">#</th><th>Bairro</th><th class="n">Negócios residenciais</th><th class="n">R$/m² útil ≈</th><th class="n">Preço mediano (apto)</th><th class="n">Vendas em prédios novos</th><th class="w"></th></tr></thead><tbody>
-  ${L.slice(0,150).map((x,i)=>{const v=BST.ord==='m2'?x.m2:x.neg;return`<tr class="click" data-b="${esc(x.b)}"><td class="n">${i+1}</td><td><b>${esc(titleCase(x.b))}</b></td><td class="n">${x.neg.toLocaleString('pt-BR')}</td><td class="n">${x.m2?brl(x.m2)+` <span class="note">(${x.np} prédios)</span>`:'—'}</td><td class="n">${brl(x.tk)}</td><td class="n">${x.nv!=null&&x.ap?x.nv+'%':'—'}</td><td class="w"><span class="hb" style="width:${(v/mx*100).toFixed(1)}%"></span></td></tr>`}).join('')||'<tr><td colspan="7">Nenhum bairro com esses filtros.</td></tr>'}
+  <div class="scroll"><table class="stack rank"><thead><tr><th class="n">#</th><th>Bairro</th><th class="n">Negócios residenciais</th><th class="n">R$/m² útil ≈</th><th class="n">Preço mediano (apto)</th><th class="n">Vendas em prédios novos</th><th class="n">Valorização 5 anos</th><th class="w"></th></tr></thead><tbody>
+  ${L.slice(0,150).map((x,i)=>{const v=Math.max(0,met(x)||0);return`<tr class="click" data-b="${esc(x.b)}"><td class="n">${i+1}</td><td><b>${esc(titleCase(x.b))}</b></td><td class="n">${x.neg.toLocaleString('pt-BR')}</td><td class="n">${x.m2?brl(x.m2)+` <span class="note">(${x.np} prédios)</span>`:'—'}</td><td class="n">${brl(x.tk)}</td><td class="n">${x.nv!=null&&x.ap?x.nv+'%':'—'}</td><td class="n">${pc(x.val)}</td><td class="w"><span class="hb" style="width:${(v/mx*100).toFixed(1)}%"></span></td></tr>`}).join('')||'<tr><td colspan="8">Nenhum bairro com esses filtros.</td></tr>'}
   </tbody></table></div>
-  <p class="note">${BST.ord==='m2'?'Só bairros com vendas em pelo menos 5 prédios. ':''}R$/m² útil = mediana entre os prédios do bairro (cada prédio conta uma vez, para um lançamento grande não dominar), com área útil ≈ área registrada na PBH × ${String(M.fu).replace('.',',')}, exceto nos prédios com fator conferido. Valores declarados, sem correção pela inflação; vendas que a PBH avaliou 20%+ acima do declarado ficam fora. "Prédios novos" = construídos até 3 anos antes do fim do período. Clique num bairro para ver os prédios.</p></div>`;
+  <p class="note">${BST.ord==='m2'?'Só bairros com vendas em pelo menos 5 prédios. ':''}R$/m² útil = mediana entre os prédios do bairro (cada prédio conta uma vez, para um lançamento grande não dominar), com área útil ≈ área registrada na PBH × ${String(M.fu).replace('.',',')}, exceto nos prédios com fator conferido. Valores declarados, sem correção pela inflação; vendas que a PBH avaliou 20%+ acima do declarado ficam fora. "Prédios novos" = construídos até 3 anos antes do fim do período. Valorização 5 anos = variação do R$/m² de um prédio típico do bairro de ${M.val_de?.slice(0,4)} a ${M.val_ate?.slice(0,4)}, comparando os mesmos prédios (não depende do período escolhido; só bairros com 20+ vendas em cada ponta)${ipV?`; IPCA no mesmo intervalo: ${pc(ipV-1)}`:''}. Clique num bairro para ver a curva de preço e o ranking de ruas e prédios.</p></div>`;
   $('#bp').onchange=e=>{BST.per=e.target.value;bairros()};
   out.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{BST.ord=b.dataset.o;bairros()});
   const bf=$('#bf');bf.oninput=()=>{BST.f=bf.value;const p=bf.selectionStart;bairros().then(()=>{const u=$('#bf');u.focus();u.setSelectionRange(p,p)})};
   out.querySelectorAll('tr.click').forEach(tr=>tr.onclick=()=>bairro(tr.dataset.b))}
 
-async function bairro(b){out.innerHTML='<p class="st">Carregando prédios…</p>';const s=CRC(b)%20;
+let BBS={vis:'ruas',ord:'neg'};
+async function bairro(b){out.innerHTML='<p class="st">Carregando bairro…</p>';const s=CRC(b)%20;
   try{if(!bcache.has(s)){const r=await fetch(`data/b${s}.json`);bcache.set(s,await r.json())}}catch(e){out.innerHTML='<p class="st">Não consegui carregar. Recarregue a página.</p>';return}
-  const L=(bcache.get(s)[b]||[]).filter(x=>x[7]!=='LV');const v=BAI?.dados['24m']?.[b];
-  out.innerHTML=`<div class="res"><div class="head"><div><h2>${esc(titleCase(b))}</h2><p>${L.length} endereços com negócios residenciais desde 2008${v?` · últimos 24 meses: ${v[0]} negócios, R$/m² útil ≈ ${brl(v[2])}`:''}</p></div><button class="g" id="bk">← Ranking de bairros</button></div>
-  <div class="scroll"><table class="stack"><thead><tr><th>Endereço</th><th>Tipo</th><th class="n">Ano constr.</th><th class="n">Negócios (24 meses)</th><th class="n">R$/m² útil ≈ (24 meses)</th><th class="n">Negócios desde 2008</th></tr></thead><tbody>
-  ${L.slice(0,300).map(x=>`<tr class="click" data-q="${esc(x[0]+' '+x[1])}"><td><b>${esc(x[0])}, ${esc(x[1]||'s/n')}</b></td><td><span class="tag">${esc(TIPO[x[7]]||x[7])}</span></td><td class="n">${x[6]||'—'}</td><td class="n">${x[2]}</td><td class="n">${x[3]?brl(x[3]):'—'}</td><td class="n">${x[4]}</td></tr>`).join('')}
-  </tbody></table></div><p class="note">${L.length>300?'Mostrando os 300 endereços mais negociados. ':''}Ordenado pelos negócios dos últimos 24 meses. Clique para abrir o prédio.</p></div>`;
+  const X=bcache.get(s)[b]||{p:[],r:[],s:[]};const P=X.p.filter(x=>x[7]!=='LV'),R=X.r,S=X.s;
+  if(!BAI)try{BAI=await(await fetch('data/bairros.json')).json()}catch{}
+  const v=BAI?.dados['24m']?.[b],nm=titleCase(b);
+  const pc=v=>(v>0?'+':'')+Math.round(v*100)+'%';
+  let L,head,row,nota;
+  if(BBS.vis==='ruas'){
+    L=BBS.ord==='m2'?R.filter(x=>x[3]&&x[5]>=2).sort((a,b)=>b[3]-a[3]):[...R];
+    const mx=Math.max(1,...L.map(x=>BBS.ord==='m2'?x[3]:x[2]));
+    head='<th class="n">#</th><th>Rua</th><th class="n">Prédios</th><th class="n">Negócios (24 meses)</th><th class="n">R$/m² útil ≈ (24 meses)</th><th class="n">Negócios desde 2008</th><th class="w"></th>';
+    row=(x,i)=>`<tr class="click" data-q="${esc(x[0])}"><td class="n">${i+1}</td><td><b>${esc(x[0])}</b></td><td class="n">${x[1]}</td><td class="n">${x[2]}</td><td class="n">${x[3]?brl(x[3])+` <span class="note">(${x[5]} ${x[5]===1?'prédio':'prédios'})</span>`:'—'}</td><td class="n">${x[4]}</td><td class="w"><span class="hb" style="width:${((BBS.ord==='m2'?x[3]:x[2])/mx*100).toFixed(1)}%"></span></td></tr>`;
+    nota=`${BBS.ord==='m2'?'Só ruas com vendas de apartamento em 2+ prédios nos últimos 24 meses. ':''}R$/m² útil = mediana entre os prédios da rua (dentro do bairro). Clique numa rua para ver todos os números e a curva de preço dela.`}
+  else{
+    L=BBS.ord==='m2'?P.filter(x=>x[3]&&x[8]>=2).sort((a,b)=>b[3]-a[3]):[...P];
+    const mx=Math.max(1,...L.map(x=>BBS.ord==='m2'?x[3]:x[2]));
+    head='<th class="n">#</th><th>Endereço</th><th>Tipo</th><th class="n">Ano constr.</th><th class="n">Negócios (24 meses)</th><th class="n">R$/m² útil ≈ (24 meses)</th><th class="n">Negócios desde 2008</th><th class="w"></th>';
+    row=(x,i)=>`<tr class="click" data-q="${esc(x[0]+' '+x[1])}"><td class="n">${i+1}</td><td><b>${esc(x[0])}, ${esc(x[1]||'s/n')}</b></td><td><span class="tag">${esc(TIPO[x[7]]||x[7])}</span></td><td class="n">${x[6]||'—'}</td><td class="n">${x[2]}</td><td class="n">${x[3]?brl(x[3]):'—'}</td><td class="n">${x[4]}</td><td class="w"><span class="hb" style="width:${((BBS.ord==='m2'?x[3]:x[2])/mx*100).toFixed(1)}%"></span></td></tr>`;
+    nota=`${BBS.ord==='m2'?'Só prédios com 2+ vendas de apartamento nos últimos 24 meses. ':''}Clique num prédio para ver todas as transações e a estimativa de valor.`}
+  out.innerHTML=`<div class="res"><div class="head"><div><h2>${esc(nm)}</h2><p>${P.length} endereços e ${R.length} ruas com negócios residenciais desde 2008</p></div><button class="g" id="bk">← Ranking de bairros</button></div>
+  <div class="kpis"><div class="kpi on"><span>R$/m² útil ≈, últimos 24 meses</span><b>${v?.[2]?brl(v[2]):'—'}</b><em>${v?`mediana entre ${v[3]} prédios`:'poucas vendas'}</em></div>
+  <div class="kpi"><span>Negócios residenciais, 24 meses</span><b>${v?v[0].toLocaleString('pt-BR'):'—'}</b><em>${v?.[4]?'preço mediano do apto '+brl(v[4]):''}</em></div>
+  ${kpiVal(S,5)}${kpiVal(S,10)}</div>
+  ${S.length>1?figHTML('Preço do m² útil no bairro ao longo do tempo, com comparações opcionais'):'<p class="note">Poucas vendas de apartamento por ano para traçar a curva de preço deste bairro.</p>'}
+  <h3 class="rk">Ranking do bairro · últimos 24 meses</h3>
+  <div class="bar"><div class="seg" role="group" aria-label="Ver"><button class="${BBS.vis==='ruas'?'on':''}" data-v="ruas">Ruas</button><button class="${BBS.vis==='predios'?'on':''}" data-v="predios">Prédios</button></div>
+  <div class="seg" role="group" aria-label="Ordenar"><button class="${BBS.ord==='neg'?'on':''}" data-o="neg">Mais negociados</button><button class="${BBS.ord==='m2'?'on':''}" data-o="m2">Mais caros</button></div></div>
+  <div class="scroll"><table class="stack rank"><thead><tr>${head}</tr></thead><tbody>
+  ${L.slice(0,200).map(row).join('')||'<tr><td colspan="8">Nada para mostrar com esse filtro.</td></tr>'}
+  </tbody></table></div><p class="note">${L.length>200?'Mostrando os 200 primeiros. ':''}${nota}${S.length>1?' A linha do gráfico mostra o R$/m² útil de um prédio típico do bairro a cada ano, comparando os mesmos prédios entre anos (lançamentos e prédios caros vendidos num ano não puxam a curva); só entram anos com 5+ vendas. Valores declarados, sem correção.':''}</p></div>`;
   $('#bk').onclick=()=>bairros();
-  out.querySelectorAll('tr.click').forEach(tr=>tr.onclick=()=>{tab('a');q.value=tr.dataset.q;$('#f').requestSubmit()})}
+  out.querySelectorAll('.seg button[data-v]').forEach(x=>x.onclick=()=>{BBS.vis=x.dataset.v;bairro(b)});
+  out.querySelectorAll('.seg button[data-o]').forEach(x=>x.onclick=()=>{BBS.ord=x.dataset.o;bairro(b)});
+  out.querySelectorAll('tr.click').forEach(tr=>tr.onclick=()=>{tab('a');q.value=tr.dataset.q;$('#f').requestSubmit()});
+  if(S.length>1){const draw=()=>chart([],{yrs:S,leg:'prédio típico do bairro, ano a ano',tit:'Prédio típico do bairro',obj:'o bairro'});ligarOvl(draw);draw()}}
 
 /* ---------- Destaques do mês ---------- */
 let DST=null,dstMes=null;
