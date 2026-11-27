@@ -2,7 +2,9 @@
 
 - ITBI (PBH): todos os CSVs mensais do conjunto "itbi-relatorios"
 - Cadastro Imobiliário (PBH): o arquivo mais recente de cada uma das 10 regionais
+- Projetos de edificação licenciados (PBH): alvarás de construção, início de obra e baixa (habite-se); arquivo mais recente
 - IPCA, CDI e dólar (Banco Central, SGS): séries mensais desde 2008
+- Notícias (Google Notícias, RSS): manchetes recentes sobre o mercado imobiliário de BH (só título, veículo, data e link)
 
 Uso: python pipeline/baixar.py dados/brutos
 Os arquivos já baixados não são baixados de novo (o cadastro é sempre o mais recente).
@@ -109,6 +111,63 @@ def cadastro(pasta):
     print(f"Cadastro: 10 regionais, versões {min(datas)} a {max(datas)}")
 
 
+def alvaras(pasta):
+    """Arquivo mais recente do conjunto "projeto-edificacao-licenciado" (snapshot completo, ~35 MB)."""
+    os.makedirs(pasta, exist_ok=True)
+    pkg = ckan("package_show", id="projeto-edificacao-licenciado")
+    cands = []
+    for r in pkg["resources"]:
+        m = re.search(r"(20\d{6})_projeto_edificacao_licenciado", (r.get("name") or "") + (r.get("url") or ""))
+        if m:
+            cands.append((m.group(1), r["url"]))
+    if not cands:
+        raise RuntimeError("Sem arquivos de projetos licenciados")
+    data, url = max(cands)
+    destino = os.path.join(pasta, f"alvaras_{data}.csv")
+    for f in os.listdir(pasta):
+        if f.startswith("alvaras_") and f != os.path.basename(destino):
+            os.remove(os.path.join(pasta, f))
+    if not os.path.exists(destino):
+        baixar(url, destino)
+    print(f"Projetos licenciados: versão {data}")
+    return destino
+
+
+BUSCAS_NOTICIAS = {
+    "mercado": '"mercado imobiliário" "Belo Horizonte"',
+    "lancamentos": '"Belo Horizonte" (lançamento OR lançamentos) (imobiliário OR apartamentos OR residencial)',
+}
+
+
+def noticias(destino, por_busca=12):
+    """Manchetes do Google Notícias (RSS). Guarda só título, veículo, data e link."""
+    import xml.etree.ElementTree as ET
+    from email.utils import parsedate_to_datetime
+    out = {}
+    for k, q in BUSCAS_NOTICIAS.items():
+        url = "https://news.google.com/rss/search?" + urllib.parse.urlencode({"q": q + " when:60d", "hl": "pt-BR", "gl": "BR", "ceid": "BR:pt-419"})
+        itens, vistos = [], set()
+        for it in ET.fromstring(get(url)).iter("item"):
+            tit = (it.findtext("title") or "").strip(); fonte = (it.findtext("source") or "").strip()
+            if fonte and tit.endswith(" - " + fonte):
+                tit = tit[: -len(fonte) - 3]
+            chave = re.sub(r"\W+", "", tit.lower())[:60]
+            if not tit or chave in vistos:
+                continue
+            vistos.add(chave)
+            try:
+                dt = parsedate_to_datetime(it.findtext("pubDate")).date().isoformat()
+            except Exception:  # noqa: BLE001
+                dt = ""
+            itens.append({"t": tit, "f": fonte, "d": dt, "u": (it.findtext("link") or "").strip()})
+        itens.sort(key=lambda x: x["d"], reverse=True)
+        out[k] = itens[:por_busca]
+    out["atualizado"] = date.today().isoformat()
+    with open(destino, "w") as f:
+        json.dump(out, f, ensure_ascii=False, indent=0)
+    print(f"Notícias: {', '.join(f'{k} {len(v)}' for k, v in out.items() if isinstance(v, list))}")
+
+
 SGS = {"ipca": 433, "cdi": 4391, "usd": 3696}
 
 
@@ -137,7 +196,17 @@ def economia(destino, anterior=None):
 
 
 if __name__ == "__main__":
+    if len(sys.argv) > 2 and sys.argv[1] == "noticias":      # só as manchetes (rotina diária)
+        noticias(sys.argv[2]); sys.exit()
     base = sys.argv[1] if len(sys.argv) > 1 else "dados/brutos"
     itbi(os.path.join(base, "itbi"))
     cadastro(os.path.join(base, "cadastro"))
     economia(os.path.join(base, "econ.json"), anterior="dados/econ.json")
+    try:  # bases complementares: se falharem, o site sai com a versão anterior
+        alvaras(os.path.join(base, "alvaras"))
+    except Exception as e:  # noqa: BLE001
+        print(f"AVISO: projetos licenciados indisponíveis ({e})")
+    try:
+        noticias(os.path.join(base, "noticias.json"))
+    except Exception as e:  # noqa: BLE001
+        print(f"AVISO: notícias indisponíveis ({e})")
