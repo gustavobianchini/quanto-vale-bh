@@ -14,26 +14,15 @@ jobs:
         run: |
           mkdir -p dados/explorar
           python -c "import sys; sys.path.insert(0,'pipeline'); import baixar; baixar.alvaras('/tmp/alv')"
-          python - <<'PY' > dados/explorar/alvaras.txt
+          python - <<'PY'
           import glob, pandas as pd
           f = glob.glob('/tmp/alv/*.csv')[0]
-          raw = open(f, 'rb').read(3000)
-          print(repr(raw[:1500]))
-          for enc in ['utf-8', 'latin-1']:
-              try:
-                  d = pd.read_csv(f, sep=None, engine='python', encoding=enc, dtype=str); break
-              except Exception as e: print('ERR', enc, e)
-          print(f, d.shape); print(list(d.columns))
-          d = d.drop(columns=[c for c in d.columns if 'GEOM' in c.upper()])
-          with pd.option_context('display.max_columns', 50, 'display.width', 250, 'display.max_colwidth', 60):
-              print(d.head(8).T)
-          for c in d.columns:
-              vc = d[c].value_counts(dropna=False)
-              print('\n==', c, 'n_unique', len(vc)); print(vc.head(12).to_string())
-          for c in [c for c in d.columns if c.upper().startswith(('DT_', 'DATA'))]:
-              s = d[c].dropna(); print('\n## datas', c, s.sample(min(8, len(s)), random_state=1).tolist())
+          d = pd.read_csv(f, sep=';', dtype=str)
+          d = d[d.TIPO.eq('LICENCIAMENTO') & d.USO_GERAL.isin(['RESIDENCIAL', 'MISTO'])]
+          d['XY'] = d.GEOMETRIA.str.extract(r'\(\(\(([\d.]+ [\d.]+)')[0]
+          d.drop(columns=['GEOMETRIA']).to_csv('dados/explorar/alvaras_res.csv.gz', index=False, sep=';', compression='gzip')
+          print(d.shape)
           PY
-          python pipeline/baixar.py noticias dados/explorar/noticias.json
       - run: |
           git config user.name "github-actions[bot]"; git config user.email "41898599+github-actions[bot]@users.noreply.github.com"
           git add dados/explorar && git commit -m "Exploração de bases [skip ci]" && git push
